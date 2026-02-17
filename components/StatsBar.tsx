@@ -1,14 +1,15 @@
 import React from 'react';
 import { Participant } from '../types';
-import { Download, Printer, RotateCcw } from 'lucide-react';
+import { Download, Printer, RotateCcw, CopyCheck } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 interface StatsBarProps {
   participants: Participant[];
   onReset: () => void;
+  onCheckDuplicates: () => void;
 }
 
-const StatsBar: React.FC<StatsBarProps> = ({ participants, onReset }) => {
+const StatsBar: React.FC<StatsBarProps> = ({ participants, onReset, onCheckDuplicates }) => {
   const totalPeople = participants.reduce((acc, p) => acc + p.count, 0);
   const totalGroups = participants.length;
 
@@ -50,26 +51,37 @@ const StatsBar: React.FC<StatsBarProps> = ({ participants, onReset }) => {
         <div className="flex space-x-3 w-full sm:w-auto">
           <button 
             onClick={onReset}
-            className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors font-medium text-sm"
+            className="flex-1 sm:flex-none flex items-center justify-center px-3 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors font-medium text-xs sm:text-sm"
+            title="最初からやり直す"
           >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            リセット
+            <RotateCcw className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">リセット</span>
+          </button>
+
+          <button 
+            onClick={onCheckDuplicates}
+            className="flex-1 sm:flex-none flex items-center justify-center px-3 py-2 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 rounded-lg transition-colors font-medium text-xs sm:text-sm shadow-sm"
+            title="重複をチェック"
+          >
+            <CopyCheck className="w-4 h-4 sm:mr-2" />
+            <span className="inline">重複検査</span>
           </button>
           
           <button 
             onClick={handleExport}
-            className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors font-medium text-sm shadow-sm"
+            className="flex-1 sm:flex-none flex items-center justify-center px-3 py-2 bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors font-medium text-xs sm:text-sm shadow-sm"
           >
-            <Download className="w-4 h-4 mr-2" />
-            Excel保存
+            <Download className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Excel保存</span>
+            <span className="inline sm:hidden">保存</span>
           </button>
           
           <button 
             onClick={handlePrint}
-            className="flex-1 sm:flex-none flex items-center justify-center px-6 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg transition-colors font-bold text-sm shadow-md"
+            className="flex-1 sm:flex-none flex items-center justify-center px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg transition-colors font-bold text-xs sm:text-sm shadow-md"
           >
-            <Printer className="w-4 h-4 mr-2" />
-            名簿を印刷する
+            <Printer className="w-4 h-4 sm:mr-2" />
+            <span className="inline">印刷</span>
           </button>
         </div>
       </div>

@@ -4,6 +4,7 @@ import DropZone from './components/DropZone';
 import RosterTable from './components/RosterTable';
 import StatsBar from './components/StatsBar';
 import PrintSettings from './components/PrintSettings';
+import DuplicateModal from './components/DuplicateModal';
 import { processSimpleRoster } from './services/simpleService';
 import { getIndexHeader } from './utils/stringUtils';
 import { AlertTriangle, Printer } from 'lucide-react';
@@ -12,6 +13,7 @@ const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   
   // Default Print Settings with numeric values
   const [printSettings, setPrintSettings] = useState<PrintSettingsType>({
@@ -75,6 +77,10 @@ const App: React.FC = () => {
             return updatedList.sort((a, b) => a.reading.localeCompare(b.reading, 'ja'));
         }
     });
+  };
+
+  const handleDeleteDuplicate = (id: string) => {
+    setParticipants(prev => prev.filter(p => p.id !== id));
   };
 
   const resetApp = () => {
@@ -158,7 +164,19 @@ const App: React.FC = () => {
       </main>
 
       {appState === AppState.COMPLETE && (
-        <StatsBar participants={participants} onReset={resetApp} />
+        <StatsBar 
+          participants={participants} 
+          onReset={resetApp} 
+          onCheckDuplicates={() => setShowDuplicateModal(true)}
+        />
+      )}
+
+      {showDuplicateModal && (
+        <DuplicateModal 
+          participants={participants}
+          onClose={() => setShowDuplicateModal(false)}
+          onDelete={handleDeleteDuplicate}
+        />
       )}
     </div>
   );
