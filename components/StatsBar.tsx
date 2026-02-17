@@ -10,19 +10,25 @@ interface StatsBarProps {
 }
 
 const StatsBar: React.FC<StatsBarProps> = ({ participants, onReset, onCheckDuplicates }) => {
-  const totalPeople = participants.reduce((acc, p) => acc + p.count, 0);
-  const totalGroups = participants.length;
+  // Filter out reference-only entries for stats
+  const activeParticipants = participants.filter(p => !p.isRef);
+  
+  const totalPeople = activeParticipants.reduce((acc, p) => acc + p.count, 0);
+  const totalGroups = activeParticipants.length;
 
   const handlePrint = () => {
     window.print();
   };
 
   const handleExport = () => {
+    // For export, we might want to include everything, or maybe just the active ones?
+    // Let's include everything but mark references
     const ws = XLSX.utils.json_to_sheet(participants.map((p, i) => ({
       No: i + 1,
       名前: p.normalizedName,
       読み: p.reading,
       人数: p.count,
+      備考: p.isRef ? '※元データ' : '',
       チェック: ''
     })));
     const wb = XLSX.utils.book_new();

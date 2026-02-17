@@ -4,7 +4,7 @@ export interface Participant {
   normalizedName: string;
   reading: string; // Katakana for sorting
   count: number;
-  // checked property removed as we are optimizing for print
+  isRef?: boolean; // If true, this is a reference entry (kept in Others) and shouldn't be counted in stats
 }
 
 export interface ParseResult {

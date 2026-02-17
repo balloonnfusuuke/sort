@@ -6,7 +6,7 @@ import StatsBar from './components/StatsBar';
 import PrintSettings from './components/PrintSettings';
 import DuplicateModal from './components/DuplicateModal';
 import { processSimpleRoster } from './services/simpleService';
-import { getIndexHeader } from './utils/stringUtils';
+// getIndexHeader removed as it is no longer used
 import { AlertTriangle, Printer } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -56,26 +56,72 @@ const App: React.FC = () => {
         );
         if (!hasChanges) return prev;
 
-        // Check if currently in 'Others'
-        const isInOthers = getIndexHeader(target.reading) === 'その他';
+        // "Ghost Reference" Logic:
+        // If the user changes the reading (moving it to a 50-on column) AND the item was likely in "Others" (reading == name),
+        // We want to KEEP the original in "Others" as a reference (so reception can find "Tanaka" in Kanji),
+        // but ADD a new entry in "Ta" for the sorted list.
+        const newReading = updates.reading !== undefined ? updates.reading : target.reading;
+        const isReadingChanged = newReading !== target.reading;
+        
+        // Check if currently "Others" (heuristic: reading is same as name, or explicitly 'その他')
+        // We also check !target.isRef so we don't duplicate a clone.
+        const isOriginallyUnsorted = (target.reading === target.normalizedName) && !target.isRef;
 
-        if (isInOthers) {
-            // Clone logic: Keep original in 'Others', add new corrected entry
-            const newParticipant: Participant = {
-                ...target,
-                ...updates,
-                id: `${target.id}-copy-${Date.now()}`
-            };
-            
-            const newList = [...prev, newParticipant];
+        if (isReadingChanged && isOriginallyUnsorted) {
+             // 1. New Sorted Entry (Active, counts towards stats)
+             const newEntry: Participant = {
+                 ...target,
+                 ...updates,
+                 id: `sorted-${target.id}-${Date.now()}`,
+                 isRef: false
+             };
+
+             // 2. Original Entry (Becomes Reference, stays in Others, removed from stats)
+             // We revert the reading change for this one so it stays in place.
+             const refEntry: Participant = {
+                 ...target,
+                 isRef: true
+                 // We do NOT apply the 'reading' update here.
+             };
+
+             // If the user also changed the NAME, apply that to both? 
+             // Usually they only change reading. If name changed, apply to ref too for clarity.
+             if (updates.normalizedName) {
+                 refEntry.normalizedName = updates.normalizedName;
+             }
+
+             const newList = prev.filter(p => p.id !== id); // Remove old instance
+             newList.push(refEntry);
+             newList.push(newEntry);
+             
              return newList.sort((a, b) => a.reading.localeCompare(b.reading, 'ja'));
-        } else {
-             // Normal update logic: Update in place
-            const updatedList = prev.map(p => 
-                p.id === id ? { ...p, ...updates } : p
-            );
-            return updatedList.sort((a, b) => a.reading.localeCompare(b.reading, 'ja'));
         }
+
+        // Smart Split Logic (unchanged):
+        // If simply splitting count (10 -> 8), handle normally.
+        const newCount = updates.count !== undefined ? updates.count : target.count;
+        const isCountReduced = newCount < target.count;
+
+        if (isReadingChanged && isCountReduced) {
+            const remainderCount = target.count - newCount;
+            if (remainderCount > 0) {
+                const updatedP = { ...target, ...updates, count: newCount };
+                const remainderP = {
+                    ...target, 
+                    id: `split-${target.id}-${Date.now()}`,
+                    count: remainderCount
+                };
+                const newList = prev.map(p => p.id === id ? updatedP : p);
+                newList.push(remainderP);
+                return newList.sort((a, b) => a.reading.localeCompare(b.reading, 'ja'));
+            }
+        }
+
+        // Normal update logic: Update in place
+        const updatedList = prev.map(p => 
+            p.id === id ? { ...p, ...updates } : p
+        );
+        return updatedList.sort((a, b) => a.reading.localeCompare(b.reading, 'ja'));
     });
   };
 

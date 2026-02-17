@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Participant, PrintSettings } from '../types';
-import { User, Users, Pencil, Save, X, MessageSquare, AlertCircle } from 'lucide-react';
+import { User, Users, Pencil, Save, X, MessageSquare, AlertCircle, RefreshCw } from 'lucide-react';
 import { getIndexHeader } from '../utils/stringUtils';
 
 interface RosterTableProps {
@@ -13,10 +13,13 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Participant>>({});
 
-  // Identify duplicates
+  // Identify duplicates (excluding refs if needed, but for "Duplicate Warning" we usually want to see true collisions. 
+  // However, isRef entries create intentional duplicates. Let's filter out refs for the duplicate warning logic.)
   const duplicateNames = useMemo(() => {
     const counts = new Map<string, number>();
     participants.forEach(p => {
+      // Don't count refs as duplicates of real entries for warning purposes
+      if (p.isRef) return; 
       counts.set(p.normalizedName, (counts.get(p.normalizedName) || 0) + 1);
     });
     const duplicates = new Set<string>();
@@ -150,16 +153,13 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
             lastHeader = currentHeader;
           }
           
-          const isDuplicate = duplicateNames.has(p.normalizedName);
+          const isDuplicate = !p.isRef && duplicateNames.has(p.normalizedName);
 
           // Determine stripe color (skip for editing)
           const isStripe = index % 2 === 1;
-          const stripeColor = '#f3f4f6'; // slate-100
+          const stripeColor = p.isRef ? '#fafafa' : '#f3f4f6'; // lighter for refs
 
           // Calculate margin top:
-          // 1. First item: 0
-          // 2. New Group (Header shown): Add spacing (12px) to separate from previous group
-          // 3. Same Group: Collapse border (-1px)
           const marginTop = index === 0 ? '0' : (showHeader ? '12px' : '-1px');
 
           return (
@@ -169,7 +169,6 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
               style={{ 
                   marginTop: isEditing ? '8px' : marginTop,
                   marginBottom: isEditing ? '8px' : '0',
-                  // Force full width when editing to ensure UI is usable
                   columnSpan: isEditing ? 'all' : 'none',
                   WebkitColumnSpan: isEditing ? 'all' : 'none' 
               } as React.CSSProperties} 
@@ -191,6 +190,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                   flex items-stretch 
                   ${isEditing ? 'bg-white' : 'hover:bg-slate-50 print:hover:bg-transparent'}
                   border-b border-slate-200 last:border-0 print:border-none
+                  ${p.isRef ? 'text-slate-500' : ''} 
                 `}
                 style={{
                     ...rowStyle,
@@ -198,14 +198,13 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                     border: isEditing ? 'none' : '1px solid black',
                     // Zebra striping
                     backgroundColor: (!isEditing && isStripe) ? stripeColor : (isEditing ? '#fff' : 'transparent'),
-                    // Ensure background prints
                     WebkitPrintColorAdjust: 'exact',
                     printColorAdjust: 'exact'
                 }}
               >
                 {/* No Column (Screen only) */}
                 <div className="w-12 flex-shrink-0 flex items-center justify-center bg-slate-50 text-slate-500 text-sm font-mono border-r border-slate-200 print:hidden">
-                  {index + 1}
+                  {p.isRef ? <RefreshCw className="w-3 h-3 text-slate-300" /> : index + 1}
                 </div>
 
                 {/* Name Column */}
@@ -241,8 +240,9 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                   ) : (
                     <>
                       <div className="relative flex items-center w-full">
-                        <div className="flex-1 truncate font-bold text-slate-900 leading-tight print:font-extrabold" style={nameStyle}>
+                        <div className={`flex-1 truncate leading-tight print:font-extrabold ${p.isRef ? 'font-medium' : 'font-bold text-slate-900'}`} style={nameStyle}>
                             {p.normalizedName}
+                            {p.isRef && <span className="text-[10px] ml-1 text-slate-400 font-normal">(元)</span>}
                         </div>
                         {isDuplicate && (
                             <div className="flex-shrink-0 ml-1 text-amber-500 print:hidden" title="名前が重複しています">
@@ -277,16 +277,16 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                           />
                       </div>
                   ) : (
-                      <span className="font-bold text-slate-800 print:font-black" style={countStyle}>
+                      <span className={`font-bold print:font-black ${p.isRef ? 'text-slate-500' : 'text-slate-800'}`} style={countStyle}>
                           {p.count}<span className="text-sm ml-0.5 font-normal" style={{ fontSize: `${baseSize * 0.6}px`}}>名</span>
                       </span>
                   )}
                 </div>
 
-                {/* Memo Column (Screen - Always visible now since we have space in 1-col mode) */}
+                {/* Memo Column (Screen) */}
                 {!isEditing && (
                     <div className="w-20 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:hidden text-xs text-slate-300">
-                        (記入欄)
+                        {p.isRef ? '元データ' : '(記入欄)'}
                     </div>
                 )}
 
