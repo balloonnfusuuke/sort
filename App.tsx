@@ -223,7 +223,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pb-32">
+    <div className="min-h-screen pb-32 print:pb-0">
       {/* Dynamic Style Injection for Print Orientation */}
       <style>{`
         @media print {
