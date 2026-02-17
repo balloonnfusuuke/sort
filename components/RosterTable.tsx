@@ -63,15 +63,6 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
   const baseSize = printSettings.fontSize;
   const headerSize = printSettings.headerFontSize || 16;
   
-  // Inline styles for print layout
-  const containerStyle = {
-    columnCount: printSettings.columns,
-    columnGap: '6mm', // Gap for the rule
-    columnRule: '1px solid #000', // Solid line between columns
-    paddingTop: '1px', 
-    paddingLeft: '1px', 
-  };
-
   const headerStyle = {
     fontSize: `${headerSize}px`,
     paddingTop: '2px',
@@ -106,10 +97,28 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-white rounded-xl overflow-hidden print:max-w-none print:bg-transparent print:overflow-visible">
+    <div className="w-full max-w-4xl mx-auto bg-white rounded-xl overflow-hidden print:max-w-none print:bg-transparent print:overflow-visible shadow-sm border border-slate-200 print:border-none print:shadow-none">
       
-      {/* Table Header (Hidden in Print for multi-column flow) */}
-      <div className="bg-slate-800 text-white px-6 py-3 flex items-center justify-between print:hidden">
+      {/* Inject Print-Only Styles for Multi-Column Layout */}
+      <style>{`
+        @media print {
+          .roster-list-container {
+            column-count: ${printSettings.columns};
+            column-gap: 6mm;
+            column-rule: 1px solid #000;
+            display: block !important;
+            height: auto !important;
+            overflow: visible !important;
+          }
+          .roster-break-avoid {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+        }
+      `}</style>
+
+      {/* Table Header (Screen Only) */}
+      <div className="bg-slate-800 text-white px-6 py-3 flex items-center justify-between print:hidden sticky top-0 z-30">
         <div className="w-12 text-center font-bold text-sm uppercase tracking-wider">
           No.
         </div>
@@ -131,7 +140,8 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
       </div>
 
       {/* List Container */}
-      <div className="border-x border-b border-slate-200 print:border-none print:block" style={containerStyle}>
+      {/* Screen: Fixed height, scrollable, single column. Print: Auto height, multi-column (via style tag) */}
+      <div className="roster-list-container h-[60vh] overflow-y-auto bg-white print:bg-transparent scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
         {participants.map((p, index) => {
           const isEditing = editingId === p.id;
           const currentHeader = getIndexHeader(p.reading);
@@ -155,7 +165,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
           return (
             <div 
               key={p.id} 
-              className={`print:break-inside-avoid mb-0 print:mb-0 ${isEditing ? 'z-20 relative shadow-lg ring-2 ring-indigo-500 rounded-lg my-2' : ''}`}
+              className={`roster-break-avoid mb-0 print:mb-0 ${isEditing ? 'z-20 relative shadow-lg ring-2 ring-indigo-500 rounded-lg my-2 mx-2 print:mx-0' : ''}`}
               style={{ 
                   marginTop: isEditing ? '8px' : marginTop,
                   marginBottom: isEditing ? '8px' : '0',
@@ -230,18 +240,18 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                     </div>
                   ) : (
                     <>
-                      <div className="flex items-center w-full min-w-0">
-                        <div className="font-bold text-slate-900 leading-tight print:font-extrabold truncate min-w-0" style={nameStyle}>
+                      <div className="relative flex items-center w-full">
+                        <div className="flex-1 truncate font-bold text-slate-900 leading-tight print:font-extrabold" style={nameStyle}>
                             {p.normalizedName}
                         </div>
                         {isDuplicate && (
-                            <div className="ml-1 text-amber-500 print:hidden flex-shrink-0" title="名前が重複しています">
+                            <div className="flex-shrink-0 ml-1 text-amber-500 print:hidden" title="名前が重複しています">
                                 <AlertCircle className="w-4 h-4" />
                             </div>
                         )}
                       </div>
                       {(p.reading && p.reading !== p.normalizedName) ? (
-                          <div className="text-slate-500 font-mono mt-0.5 print:text-slate-600 truncate" style={readingStyle}>
+                          <div className="text-slate-500 font-mono mt-0.5 print:text-slate-600 truncate w-full" style={readingStyle}>
                           {p.reading}
                           </div>
                       ) : null}
@@ -273,7 +283,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                   )}
                 </div>
 
-                {/* Memo Column (Screen - Hide when editing) */}
+                {/* Memo Column (Screen - Always visible now since we have space in 1-col mode) */}
                 {!isEditing && (
                     <div className="w-20 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:hidden text-xs text-slate-300">
                         (記入欄)
