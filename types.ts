@@ -39,3 +39,9 @@ export interface PrintSettings {
   // Extra Features
   walkInSlots: number; // Number of empty rows for walk-ins
 }
+
+export interface PrintPreset {
+  id: string;
+  name: string;
+  settings: PrintSettings;
+}

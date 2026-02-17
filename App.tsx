@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { AppState, Participant, PrintSettings as PrintSettingsType } from './types';
+import { AppState, Participant, PrintSettings as PrintSettingsType, PrintPreset } from './types';
 import DropZone from './components/DropZone';
 import RosterTable from './components/RosterTable';
 import StatsBar from './components/StatsBar';
@@ -51,10 +51,40 @@ const App: React.FC = () => {
     return defaultSettings;
   });
 
+  // Presets State
+  const [presets, setPresets] = useState<PrintPreset[]>(() => {
+    try {
+        const saved = localStorage.getItem('smartRoster_presets');
+        return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+        return [];
+    }
+  });
+
   // Save settings to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('smartRoster_settings', JSON.stringify(printSettings));
   }, [printSettings]);
+
+  // Save presets to localStorage
+  useEffect(() => {
+      localStorage.setItem('smartRoster_presets', JSON.stringify(presets));
+  }, [presets]);
+
+  const handleSavePreset = (name: string, settings: PrintSettingsType) => {
+      const newPreset: PrintPreset = {
+          id: Date.now().toString(),
+          name,
+          settings: { ...settings } // Deep copy
+      };
+      setPresets(prev => [...prev, newPreset]);
+  };
+
+  const handleDeletePreset = (id: string) => {
+      if (window.confirm("このお気に入り設定を削除しますか？")) {
+        setPresets(prev => prev.filter(p => p.id !== id));
+      }
+  };
 
   const handleDataLoaded = useCallback(async (rawData: any[]) => {
     setAppState(AppState.PROCESSING);
@@ -230,7 +260,13 @@ const App: React.FC = () => {
         ) : (
           <div className="max-w-4xl mx-auto print:w-full print:max-w-none">
              
-             <PrintSettings settings={printSettings} onChange={setPrintSettings} />
+             <PrintSettings 
+                settings={printSettings} 
+                onChange={setPrintSettings}
+                presets={presets}
+                onSavePreset={handleSavePreset}
+                onDeletePreset={handleDeletePreset}
+             />
 
              {/* Preview Note */}
              <div className="text-center mb-4 text-slate-400 text-xs print:hidden">

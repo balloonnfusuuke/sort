@@ -1,23 +1,73 @@
 import React from 'react';
-import { PrintSettings as PrintSettingsType, PageOrientation } from '../types';
-import { Settings, Grid, Type, MoveVertical, PenLine, File as FileIcon, Heading, Calendar, PlusSquare } from 'lucide-react';
+import { PrintSettings as PrintSettingsType, PrintPreset } from '../types';
+import { Settings, Grid, Type, MoveVertical, PenLine, File as FileIcon, Heading, Calendar, PlusSquare, Bookmark, X, Plus } from 'lucide-react';
 
 interface PrintSettingsProps {
   settings: PrintSettingsType;
   onChange: (settings: PrintSettingsType) => void;
+  presets: PrintPreset[];
+  onSavePreset: (name: string, settings: PrintSettingsType) => void;
+  onDeletePreset: (id: string) => void;
 }
 
-const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => {
+const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange, presets, onSavePreset, onDeletePreset }) => {
   
   const handleChange = (key: keyof PrintSettingsType, value: any) => {
     onChange({ ...settings, [key]: value });
   };
 
+  const handleSaveClick = () => {
+      const name = window.prompt("現在の設定に名前をつけて保存します。\n設定名を入力してください（例: A4縦・3列）");
+      if (name && name.trim()) {
+          onSavePreset(name.trim(), settings);
+      }
+  };
+
   return (
     <div className="bg-white border border-slate-300 rounded-xl p-5 mb-6 shadow-sm print:hidden">
-      <div className="flex items-center mb-4 text-slate-800 font-bold text-base border-b border-slate-100 pb-2">
-        <Settings className="w-5 h-5 mr-2 text-indigo-600" />
-        印刷設定
+      
+      {/* Header & Presets */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-4 mb-4">
+        <div className="flex items-center text-slate-800 font-bold text-base mb-2 md:mb-0">
+            <Settings className="w-5 h-5 mr-2 text-indigo-600" />
+            印刷設定
+        </div>
+        
+        {/* Presets UI */}
+        <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center text-xs text-slate-400 mr-1">
+                <Bookmark className="w-3 h-3 mr-1" />
+                お気に入り:
+            </div>
+            {presets.length === 0 && (
+                <span className="text-xs text-slate-300">保存された設定はありません</span>
+            )}
+            {presets.map(p => (
+                <div key={p.id} className="flex items-center bg-indigo-50 border border-indigo-100 rounded text-xs overflow-hidden group">
+                    <button 
+                        onClick={() => onChange(p.settings)} 
+                        className="px-2 py-1 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 transition-colors"
+                        title="この設定を適用"
+                    >
+                        {p.name}
+                    </button>
+                    <button 
+                        onClick={() => onDeletePreset(p.id)} 
+                        className="px-1 py-1 text-indigo-300 hover:bg-indigo-200 hover:text-indigo-700 border-l border-indigo-100 transition-colors"
+                        title="削除"
+                    >
+                        <X size={12} />
+                    </button>
+                </div>
+            ))}
+            <button 
+                onClick={handleSaveClick} 
+                className="flex items-center px-2 py-1 bg-white border border-dashed border-slate-300 text-slate-500 rounded text-xs hover:bg-slate-50 hover:border-indigo-300 hover:text-indigo-600 transition-all ml-1"
+                title="現在の設定を保存"
+            >
+                <Plus size={12} className="mr-1"/> 保存
+            </button>
+        </div>
       </div>
 
       {/* Header Info Section */}
