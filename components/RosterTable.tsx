@@ -29,7 +29,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
     return duplicates;
   }, [participants]);
 
-  if (participants.length === 0) return null;
+  // if (participants.length === 0) return null; // allow rendering for walk-in slots only if needed? likely not.
 
   const startEditing = (p: Participant) => {
     setEditingId(p.id);
@@ -99,6 +99,15 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
     minWidth: `${printSettings.checkboxSize}px`,
   };
 
+  // Generate Walk-in Rows
+  const walkInRows = useMemo(() => {
+      if (!printSettings.walkInSlots || printSettings.walkInSlots <= 0) return [];
+      return Array.from({ length: printSettings.walkInSlots }).map((_, i) => i);
+  }, [printSettings.walkInSlots]);
+
+  // Total items = participants + 1 header per group (roughly) + walk-ins
+  // We handle headers inline.
+
   return (
     <div className="w-full max-w-4xl mx-auto bg-white rounded-xl overflow-hidden print:max-w-none print:bg-transparent print:overflow-visible shadow-sm border border-slate-200 print:border-none print:shadow-none">
       
@@ -145,6 +154,8 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
       {/* List Container */}
       {/* Screen: Fixed height, scrollable, single column. Print: Auto height, multi-column (via style tag) */}
       <div className="roster-list-container h-[60vh] overflow-y-auto bg-white print:bg-transparent scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
+        
+        {/* Render Participants */}
         {participants.map((p, index) => {
           const isEditing = editingId === p.id;
           const currentHeader = getIndexHeader(p.reading);
@@ -324,6 +335,73 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
             </div>
           );
         })}
+
+        {/* Render Walk-in Slots */}
+        {walkInRows.length > 0 && (
+            <div className="roster-break-avoid mt-3">
+                 <div 
+                  className="bg-slate-700 text-white font-extrabold px-2 border border-black print:bg-slate-200 print:text-black mb-[1px]" // slightly different style or same? Let's use standard header style but dark for screen distinction
+                  style={{
+                      ...headerStyle,
+                      border: '1px solid black',
+                      marginTop: '12px'
+                  }}
+                >
+                  当日枠
+                </div>
+                {walkInRows.map((_, i) => (
+                    <div 
+                        key={`walkin-${i}`}
+                        className="flex items-stretch border-b border-slate-200 last:border-0 print:border-none"
+                        style={{
+                            ...rowStyle,
+                            border: '1px solid black',
+                            backgroundColor: 'transparent',
+                            marginBottom: '-1px' // collapse borders
+                        }}
+                    >
+                         {/* No Column (Screen) */}
+                        <div className="w-12 flex-shrink-0 flex items-center justify-center bg-slate-50 text-slate-400 text-sm font-mono border-r border-slate-200 print:hidden">
+                           +
+                        </div>
+                        
+                         {/* Name Column (Empty) */}
+                        <div 
+                            className="flex-1 px-2 flex items-center justify-end border-r border-slate-200 print:border-r print:border-black min-w-0"
+                            style={{ borderRight: '1px solid black' }}
+                        >
+                            {/* Line for handwriting? Or just empty. */}
+                            <span className="text-slate-300 text-xs print:hidden">(手書き用)</span>
+                        </div>
+
+                         {/* Count Column (Empty) */}
+                        <div 
+                            className="w-16 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-1"
+                            style={{ borderRight: '1px solid black' }} 
+                        >
+                             <span className="text-slate-300 text-xs print:hidden">名</span>
+                        </div>
+
+                         {/* Memo Column (Screen) */}
+                        <div className="w-20 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:hidden text-xs text-slate-300">
+                           
+                        </div>
+
+                        {/* Memo Column (Print) */}
+                        <div 
+                        className="hidden print:flex items-center justify-center p-0 print:block" 
+                        style={memoColumnStyle}
+                        >
+                        </div>
+                         
+                         {/* Edit (Screen) */}
+                        <div className="w-20 flex-shrink-0 flex items-center justify-center p-2 print:hidden">
+                        </div>
+                    </div>
+                ))}
+            </div>
+        )}
+
       </div>
     </div>
   );

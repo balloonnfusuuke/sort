@@ -5,15 +5,17 @@ import RosterTable from './components/RosterTable';
 import StatsBar from './components/StatsBar';
 import PrintSettings from './components/PrintSettings';
 import DuplicateModal from './components/DuplicateModal';
+import HelpModal from './components/HelpModal';
 import { processSimpleRoster } from './services/simpleService';
 // getIndexHeader removed as it is no longer used
-import { AlertTriangle, Printer } from 'lucide-react';
+import { AlertTriangle, Printer, HelpCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   
   // Default Print Settings with numeric values
   const [printSettings, setPrintSettings] = useState<PrintSettingsType>({
@@ -22,7 +24,15 @@ const App: React.FC = () => {
     fontSize: 12,       // 12px
     rowPadding: 2,      // 2px
     checkboxSize: 40,   // 40px for memo
-    headerFontSize: 16  // 16px for headers
+    headerFontSize: 16,  // 16px for headers
+    
+    // Header Defaults
+    title: '参加者名簿',
+    date: new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }),
+    subtitle: '受付用リスト (50音順)',
+    
+    // Walk-in Slots Default
+    walkInSlots: 10
   });
 
   const handleDataLoaded = useCallback(async (rawData: any[]) => {
@@ -150,8 +160,8 @@ const App: React.FC = () => {
       `}</style>
 
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 pt-8 pb-6 px-4 no-print">
-        <div className="max-w-4xl mx-auto text-center">
+      <header className="bg-white border-b border-slate-200 pt-8 pb-6 px-4 no-print relative">
+        <div className="max-w-4xl mx-auto text-center relative">
           <div className="flex items-center justify-center mb-4">
             <div className="bg-indigo-600 p-3 rounded-2xl shadow-lg shadow-indigo-200">
               <Printer className="w-8 h-8 text-white" />
@@ -164,15 +174,26 @@ const App: React.FC = () => {
             バラバラな予約リストをアップロードして、印刷用のきれいな名簿を作成します。
             <br/>読み仮名がない漢字の名前は「その他」に入りますので、必要に応じて編集してください。
           </p>
+
+          {/* Help Button positioned absolutely to the right of header content or just inline if preferred. 
+              Let's put it top-right of the header area.
+          */}
+          <button 
+            onClick={() => setShowHelpModal(true)}
+            className="absolute top-0 right-0 p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-full transition-colors"
+            title="使い方ガイド"
+          >
+            <HelpCircle className="w-6 h-6" />
+          </button>
         </div>
       </header>
 
-      {/* Print Only Header */}
+      {/* Print Only Header (Dynamic) */}
       <div className="hidden print:flex items-end justify-between pt-4 pb-2 mb-2 border-b-2 border-black">
-        <h1 className="font-black tracking-tight" style={{ fontSize: '24px' }}>参加者名簿</h1>
+        <h1 className="font-black tracking-tight" style={{ fontSize: '24px' }}>{printSettings.title}</h1>
         <div className="text-right">
-             <p className="font-bold" style={{ fontSize: '12px' }}>{new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-             <p className="text-slate-600 mt-0" style={{ fontSize: '10px' }}>受付用リスト (50音順)</p>
+             <p className="font-bold" style={{ fontSize: '12px' }}>{printSettings.date}</p>
+             <p className="text-slate-600 mt-0" style={{ fontSize: '10px' }}>{printSettings.subtitle}</p>
         </div>
       </div>
 
@@ -223,6 +244,10 @@ const App: React.FC = () => {
           onClose={() => setShowDuplicateModal(false)}
           onDelete={handleDeleteDuplicate}
         />
+      )}
+
+      {showHelpModal && (
+        <HelpModal onClose={() => setShowHelpModal(false)} />
       )}
     </div>
   );

@@ -29,4 +29,12 @@ export interface PrintSettings {
   rowPadding: number;   // px (vertical padding)
   checkboxSize: number; // px (memo width)
   headerFontSize: number; // px (index header size)
+  
+  // Header Customization
+  title: string;
+  date: string;
+  subtitle: string;
+
+  // Extra Features
+  walkInSlots: number; // Number of empty rows for walk-ins
 }

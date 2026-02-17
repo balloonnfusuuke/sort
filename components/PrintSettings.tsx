@@ -1,6 +1,6 @@
 import React from 'react';
 import { PrintSettings as PrintSettingsType, PageOrientation } from '../types';
-import { Settings, Grid, Type, MoveVertical, PenLine, File as FileIcon, Heading } from 'lucide-react';
+import { Settings, Grid, Type, MoveVertical, PenLine, File as FileIcon, Heading, Calendar, PlusSquare } from 'lucide-react';
 
 interface PrintSettingsProps {
   settings: PrintSettingsType;
@@ -17,9 +17,50 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => 
     <div className="bg-white border border-slate-300 rounded-xl p-5 mb-6 shadow-sm print:hidden">
       <div className="flex items-center mb-4 text-slate-800 font-bold text-base border-b border-slate-100 pb-2">
         <Settings className="w-5 h-5 mr-2 text-indigo-600" />
-        印刷レイアウト詳細設定
+        印刷設定
+      </div>
+
+      {/* Header Info Section */}
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="col-span-1 md:col-span-3 text-xs font-bold text-slate-500 mb-1">
+             ヘッダー情報（印刷タイトル）
+          </div>
+          
+          <div className="relative">
+              <label className="text-[10px] text-slate-400 absolute top-1 left-2">タイトル</label>
+              <input 
+                  type="text"
+                  value={settings.title}
+                  onChange={(e) => handleChange('title', e.target.value)}
+                  className="w-full pt-5 pb-2 px-2 border border-slate-200 rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="参加者名簿"
+              />
+          </div>
+
+           <div className="relative">
+              <label className="text-[10px] text-slate-400 absolute top-1 left-2">日付</label>
+               <input 
+                  type="text"
+                  value={settings.date}
+                  onChange={(e) => handleChange('date', e.target.value)}
+                  className="w-full pt-5 pb-2 px-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="2024年..."
+              />
+          </div>
+
+          <div className="relative">
+              <label className="text-[10px] text-slate-400 absolute top-1 left-2">サブタイトル</label>
+               <input 
+                  type="text"
+                  value={settings.subtitle}
+                  onChange={(e) => handleChange('subtitle', e.target.value)}
+                  className="w-full pt-5 pb-2 px-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="受付用リスト..."
+              />
+          </div>
       </div>
       
+      {/* Layout Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
         {/* 1. Orientation */}
@@ -141,6 +182,33 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => 
             onChange={(e) => handleChange('checkboxSize', parseInt(e.target.value))}
             className="w-full accent-indigo-600"
           />
+        </div>
+        
+        {/* 7. Walk-in Slots */}
+        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+           <label className="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between">
+            <div className="flex items-center"><PlusSquare className="w-3 h-3 mr-1" /> 当日枠 (空行)</div>
+            <span className="text-indigo-600">{settings.walkInSlots}行</span>
+          </label>
+           <div className="flex items-center gap-2">
+            <input 
+                type="range" 
+                min="0" 
+                max="50" 
+                step="1"
+                value={settings.walkInSlots}
+                onChange={(e) => handleChange('walkInSlots', parseInt(e.target.value))}
+                className="flex-1 accent-indigo-600"
+            />
+             <input 
+                type="number"
+                min="0"
+                max="100"
+                value={settings.walkInSlots}
+                onChange={(e) => handleChange('walkInSlots', parseInt(e.target.value))}
+                className="w-16 text-right text-sm border border-slate-300 rounded px-1 py-0.5"
+            />
+           </div>
         </div>
 
       </div>
