@@ -155,7 +155,7 @@ const App: React.FC = () => {
         @media print {
           @page {
             size: ${printSettings.orientation};
-            margin: 5mm; /* Reduced margins to minimize wasted space */
+            margin: 3mm; /* Reduced margins to minimize wasted space */
           }
         }
       `}</style>
@@ -190,7 +190,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Print Only Header (Dynamic) */}
-      <div className="hidden print:flex items-end justify-between pt-4 pb-2 mb-2 border-b-2 border-black">
+      <div className="hidden print:flex items-end justify-between pt-2 pb-1 mb-1 border-b-2 border-black">
         <h1 className="font-black tracking-tight" style={{ fontSize: `${printSettings.titleFontSize}px`, lineHeight: 1.1 }}>{printSettings.title}</h1>
         <div className="text-right">
              <p className="font-bold" style={{ fontSize: '12px' }}>{printSettings.date}</p>

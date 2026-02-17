@@ -116,7 +116,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
         @media print {
           .roster-list-container {
             column-count: ${printSettings.columns};
-            column-gap: 6mm;
+            column-gap: 3mm; /* Tightened gap */
             column-rule: 1px solid #000;
             display: block !important;
             height: auto !important;
@@ -125,6 +125,10 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
           .roster-break-avoid {
             break-inside: avoid;
             page-break-inside: avoid;
+          }
+          /* Custom tight classes for print */
+          .print-tight-mt-header {
+             margin-top: 2px !important;
           }
         }
       `}</style>
@@ -170,15 +174,16 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
           const isStripe = index % 2 === 1;
           const stripeColor = p.isRef ? '#fafafa' : '#f3f4f6'; // lighter for refs
 
-          // Calculate margin top:
-          const marginTop = index === 0 ? '0' : (showHeader ? '12px' : '-1px');
+          // Calculate margin top class logic
+          // Default screen: mt-3 (12px) if header, -mt-[1px] if not
+          // Print: want tighter spacing. We use 'print-tight-mt-header' class defined in style tag to override.
+          const marginTopClass = index === 0 ? 'mt-0' : (showHeader ? 'mt-3 print-tight-mt-header' : '-mt-[1px]');
 
           return (
             <div 
               key={p.id} 
-              className={`roster-break-avoid mb-0 print:mb-0 ${isEditing ? 'z-20 relative shadow-lg ring-2 ring-indigo-500 rounded-lg my-2 mx-2 print:mx-0' : ''}`}
+              className={`roster-break-avoid mb-0 print:mb-0 ${marginTopClass} ${isEditing ? 'z-20 relative shadow-lg ring-2 ring-indigo-500 rounded-lg my-2 mx-2 print:mx-0' : ''}`}
               style={{ 
-                  marginTop: isEditing ? '8px' : marginTop,
                   marginBottom: isEditing ? '8px' : '0',
                   columnSpan: isEditing ? 'all' : 'none',
                   WebkitColumnSpan: isEditing ? 'all' : 'none' 
@@ -220,7 +225,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
 
                 {/* Name Column */}
                 <div 
-                    className="flex-1 px-2 flex flex-col justify-center border-r border-slate-200 print:border-r print:border-black min-w-0"
+                    className="flex-1 px-2 print:px-0.5 flex flex-col justify-center border-r border-slate-200 print:border-r print:border-black min-w-0"
                     style={{ borderRight: isEditing ? 'none' : '1px solid black' }} // Force internal vertical line
                 >
                   {isEditing ? (
@@ -272,7 +277,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
 
                 {/* Count Column */}
                 <div 
-                    className="w-16 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-1"
+                    className="w-16 print:w-14 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-0.5"
                     style={{ borderRight: isEditing ? 'none' : '1px solid black' }} // Force internal vertical line
                 >
                   {isEditing ? (
@@ -338,13 +343,13 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
 
         {/* Render Walk-in Slots */}
         {walkInRows.length > 0 && (
-            <div className="roster-break-avoid mt-3">
+            <div className="roster-break-avoid mt-3 print-tight-mt-header">
                  <div 
                   className="bg-slate-700 text-white font-extrabold px-2 border border-black print:bg-slate-200 print:text-black mb-[1px]" // slightly different style or same? Let's use standard header style but dark for screen distinction
                   style={{
                       ...headerStyle,
                       border: '1px solid black',
-                      marginTop: '12px'
+                      // marginTop: '12px' // Handled by container class for consistency
                   }}
                 >
                   メモ
@@ -367,7 +372,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                         
                          {/* Name Column (Empty) */}
                         <div 
-                            className="flex-1 px-2 flex items-center justify-end border-r border-slate-200 print:border-r print:border-black min-w-0 relative"
+                            className="flex-1 px-2 print:px-0.5 flex items-center justify-end border-r border-slate-200 print:border-r print:border-black min-w-0 relative"
                             style={{ borderRight: '1px solid black' }}
                         >
                             {/* Insert invisible text with nameStyle to force height */}
@@ -378,7 +383,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
 
                          {/* Count Column (Empty) */}
                         <div 
-                            className="w-16 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-1"
+                            className="w-16 print:w-14 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-0.5"
                             style={{ borderRight: '1px solid black' }} 
                         >
                              <span className="text-slate-300 text-xs print:hidden">名</span>
