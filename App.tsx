@@ -6,9 +6,10 @@ import StatsBar from './components/StatsBar';
 import PrintSettings from './components/PrintSettings';
 import DuplicateModal from './components/DuplicateModal';
 import HelpModal from './components/HelpModal';
+import AppSettingsModal from './components/AppSettingsModal';
 import { processSimpleRoster } from './services/simpleService';
 // getIndexHeader removed as it is no longer used
-import { AlertTriangle, Printer, HelpCircle } from 'lucide-react';
+import { AlertTriangle, Bot, HelpCircle, Settings } from 'lucide-react';
 
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
@@ -16,6 +17,29 @@ const App: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  
+  // Custom Icon State
+  const [customIcon, setCustomIcon] = useState<string | null>(() => {
+    try {
+        return localStorage.getItem('smartRoster_customIcon');
+    } catch (e) {
+        return null;
+    }
+  });
+
+  // Save custom icon when it changes
+  useEffect(() => {
+    if (customIcon) {
+        try {
+            localStorage.setItem('smartRoster_customIcon', customIcon);
+        } catch (e) {
+            console.warn("Failed to save icon to local storage (might be too large)", e);
+        }
+    } else {
+        localStorage.removeItem('smartRoster_customIcon');
+    }
+  }, [customIcon]);
   
   // Default Print Settings with localStorage persistence
   const [printSettings, setPrintSettings] = useState<PrintSettingsType>(() => {
@@ -213,27 +237,46 @@ const App: React.FC = () => {
       {/* Header */}
       <header className="bg-white border-b border-slate-200 pt-8 pb-6 px-4 no-print relative">
         <div className="max-w-4xl mx-auto text-center relative">
+          
+          {/* Main Icon Area */}
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-indigo-600 p-3 rounded-2xl shadow-lg shadow-indigo-200">
-              <Printer className="w-8 h-8 text-white" />
+            <div className={`p-3 rounded-2xl shadow-lg shadow-indigo-200 ${customIcon ? 'bg-white' : 'bg-indigo-600'}`}>
+              {customIcon ? (
+                <img src={customIcon} alt="Logo" className="w-8 h-8 object-contain" />
+              ) : (
+                <Bot className="w-8 h-8 text-white" />
+              )}
             </div>
           </div>
+
           <h1 className="text-3xl font-extrabold text-slate-800 mb-2 tracking-tight">
             名簿自動整理くん
           </h1>
           <p className="text-slate-500 max-w-lg mx-auto">
-            バラバラな予約リストをアップロードして、印刷用のきれいな名簿を作成します。
-            <br/>読み仮名がない漢字の名前は「その他」に入りますので、必要に応じて編集してください。
+            バラバラな予約リストを印刷用のきれいな名簿に大変身させるのだ！
           </p>
 
-          {/* Help Button */}
-          <button 
-            onClick={() => setShowHelpModal(true)}
-            className="absolute top-0 right-0 p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-full transition-colors"
-            title="使い方ガイド"
-          >
-            <HelpCircle className="w-6 h-6" />
-          </button>
+          {/* Top Right Actions */}
+          <div className="absolute top-0 right-0 flex items-center gap-1">
+             {/* Settings Button */}
+            <button 
+                onClick={() => setShowSettingsModal(true)}
+                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-full transition-colors"
+                title="アプリ設定"
+            >
+                <Settings className="w-6 h-6" />
+            </button>
+
+            {/* Help Button */}
+            <button 
+                onClick={() => setShowHelpModal(true)}
+                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-full transition-colors"
+                title="使い方ガイド"
+            >
+                <HelpCircle className="w-6 h-6" />
+            </button>
+          </div>
+          
         </div>
       </header>
 
@@ -268,11 +311,6 @@ const App: React.FC = () => {
                 onDeletePreset={handleDeletePreset}
              />
 
-             {/* Preview Note */}
-             <div className="text-center mb-4 text-slate-400 text-xs print:hidden">
-                ▼ 以下は印刷イメージのプレビューです。指定した列数 ({printSettings.columns}列) と文字サイズ ({printSettings.fontSize}px) で表示されます。
-             </div>
-
             <RosterTable 
               participants={participants} 
               onUpdate={handleUpdateParticipant}
@@ -300,6 +338,14 @@ const App: React.FC = () => {
 
       {showHelpModal && (
         <HelpModal onClose={() => setShowHelpModal(false)} />
+      )}
+
+      {showSettingsModal && (
+        <AppSettingsModal 
+            onClose={() => setShowSettingsModal(false)} 
+            customIcon={customIcon}
+            onSetIcon={setCustomIcon}
+        />
       )}
     </div>
   );

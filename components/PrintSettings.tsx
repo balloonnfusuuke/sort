@@ -280,9 +280,6 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange, prese
 
       </div>
       
-      <div className="mt-4 pt-3 border-t border-slate-200 text-xs text-slate-500 flex justify-center">
-        <span>※ 画面上の表示はプレビューです。正確な改ページ位置は印刷プレビューで確認してください。</span>
-      </div>
     </div>
   );
 };

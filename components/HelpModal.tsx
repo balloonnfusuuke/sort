@@ -49,7 +49,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
                 </h3>
                 <p className="text-sm mb-3">
                     読み仮名（カタカナ・ひらがな）が含まれていれば自動で50音順に並びます。<br/>
-                    <strong className="text-red-500">漢字のみの名前は読み方が不明なため「その他」グループに分類されます。</strong>
+                    <strong className="text-red-500">読み仮名がない漢字の名前は「その他」に入りますので、必要に応じて編集してください。</strong>
                 </p>
             </section>
 
