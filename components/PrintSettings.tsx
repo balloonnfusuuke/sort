@@ -1,6 +1,6 @@
 import React from 'react';
 import { PrintSettings as PrintSettingsType, PageOrientation } from '../types';
-import { Settings, Grid, Type, MoveVertical, PenLine, File as FileIcon } from 'lucide-react';
+import { Settings, Grid, Type, MoveVertical, PenLine, File as FileIcon, Heading } from 'lucide-react';
 
 interface PrintSettingsProps {
   settings: PrintSettingsType;
@@ -65,10 +65,10 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => 
           </div>
         </div>
 
-        {/* 3. Font Size */}
+        {/* 3. Font Size (Body) */}
         <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
            <label className="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between">
-            <div className="flex items-center"><Type className="w-3 h-3 mr-1" /> 文字サイズ (基準)</div>
+            <div className="flex items-center"><Type className="w-3 h-3 mr-1" /> 文字サイズ (名前)</div>
             <span className="text-indigo-600">{settings.fontSize}px</span>
           </label>
           <div className="flex items-center gap-2">
@@ -92,7 +92,24 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => 
           </div>
         </div>
 
-        {/* 4. Row Padding */}
+        {/* 4. Font Size (Header) */}
+        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+           <label className="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between">
+            <div className="flex items-center"><Heading className="w-3 h-3 mr-1" /> 文字サイズ (見出し)</div>
+            <span className="text-indigo-600">{settings.headerFontSize || 16}px</span>
+          </label>
+          <input 
+            type="range" 
+            min="10" 
+            max="40" 
+            step="1"
+            value={settings.headerFontSize || 16}
+            onChange={(e) => handleChange('headerFontSize', parseInt(e.target.value))}
+            className="w-full accent-indigo-600"
+          />
+        </div>
+
+        {/* 5. Row Padding */}
         <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
            <label className="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between">
             <div className="flex items-center"><MoveVertical className="w-3 h-3 mr-1" /> 行間 (余白)</div>
@@ -109,7 +126,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => 
           />
         </div>
 
-        {/* 5. Memo Column Width (previously Checkbox) */}
+        {/* 6. Memo Column Width */}
         <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
            <label className="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between">
             <div className="flex items-center"><PenLine className="w-3 h-3 mr-1" /> 記入欄の幅 (メモ用)</div>
@@ -118,7 +135,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => 
            <input 
             type="range" 
             min="20" 
-            max="150" 
+            max="200" 
             step="5"
             value={settings.checkboxSize}
             onChange={(e) => handleChange('checkboxSize', parseInt(e.target.value))}

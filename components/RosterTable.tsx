@@ -41,19 +41,21 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
 
   // Calculate dynamic styles
   const baseSize = printSettings.fontSize;
+  const headerSize = printSettings.headerFontSize || 16;
   
   // Inline styles for print layout
   const containerStyle = {
     columnCount: printSettings.columns,
-    columnGap: '15px', 
+    columnGap: '10px', // Tighter gap to reduce wasted space
   };
 
   const headerStyle = {
-    fontSize: `${baseSize * 1.3}px`,
-    marginTop: `${baseSize * 0.8}px`,
-    paddingTop: '4px',
-    paddingBottom: '4px',
-    marginBottom: '0px' // Connect to table below
+    fontSize: `${headerSize}px`,
+    paddingTop: '2px',
+    paddingBottom: '2px',
+    marginTop: '0px',
+    marginBottom: '0px',
+    lineHeight: '1.2'
   };
 
   const rowStyle = {
@@ -73,7 +75,6 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
     fontSize: `${baseSize * 1.1}px`,
   };
   
-  // This now controls the width of the memo column, not the size of a checkbox icon
   const memoColumnStyle = {
     width: `${printSettings.checkboxSize}px`,
     minWidth: `${printSettings.checkboxSize}px`,
@@ -104,7 +105,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
         </div>
       </div>
 
-      {/* List Container - Uses inline styles for column count in print */}
+      {/* List Container */}
       <div className="border-x border-b border-slate-200 print:border-none print:block" style={containerStyle}>
         {participants.map((p, index) => {
           const isEditing = editingId === p.id;
@@ -115,10 +116,10 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
           }
 
           return (
-            <div key={p.id} className="print:break-inside-avoid mb-0">
+            <div key={p.id} className="print:break-inside-avoid mb-0 print:border-l print:border-black print:first:border-t-0">
               {showHeader && (
                 <div 
-                  className="bg-slate-200 text-slate-800 font-extrabold px-4 border-b border-slate-400 print:bg-slate-200 print:text-black print:border-black print:border print:first:mt-0"
+                  className="bg-slate-200 text-slate-800 font-extrabold px-2 border-y border-r border-slate-400 print:bg-slate-200 print:text-black print:border-black print:border-y print:border-r print:border-l-0"
                   style={headerStyle}
                 >
                   {currentHeader}
@@ -127,8 +128,8 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
               
               <div 
                 className={`
-                  flex items-stretch border-b border-slate-200 last:border-0 
-                  print:border-black print:border-b print:border-x
+                  flex items-stretch border-b border-r border-slate-200 last:border-0 
+                  print:border-black print:border-b print:border-r print:border-l-0
                   ${isEditing ? 'bg-indigo-50' : 'hover:bg-slate-50 print:hover:bg-transparent'}
                 `}
                 style={rowStyle}
@@ -139,7 +140,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                 </div>
 
                 {/* Name Column */}
-                <div className="flex-1 px-4 flex flex-col justify-center border-r border-slate-200 print:border-r print:border-black print:px-2">
+                <div className="flex-1 px-2 flex flex-col justify-center border-r border-slate-200 print:border-r print:border-black">
                   {isEditing ? (
                     <div className="flex flex-col space-y-2 py-2">
                       <div className="flex flex-col">
@@ -176,39 +177,36 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                 </div>
 
                 {/* Count Column */}
-                <div className="w-24 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:w-auto print:px-2">
+                <div className="w-16 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-1">
                   {isEditing ? (
                       <div className="flex items-center">
                           <input 
                               type="number" 
                               min="1"
-                              className="w-16 border border-indigo-300 rounded px-2 py-1 text-center font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              className="w-10 border border-indigo-300 rounded px-1 py-1 text-center font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                               value={editForm.count || 1}
                               onChange={e => setEditForm({...editForm, count: parseInt(e.target.value) || 1})}
                           />
-                          <span className="ml-1 text-sm">名</span>
                       </div>
                   ) : (
                       <span className="font-bold text-slate-800 print:font-black" style={countStyle}>
-                          {p.count}<span className="text-sm ml-1 font-normal" style={{ fontSize: `${baseSize * 0.6}px`}}>名</span>
+                          {p.count}<span className="text-sm ml-0.5 font-normal" style={{ fontSize: `${baseSize * 0.6}px`}}>名</span>
                       </span>
                   )}
                 </div>
 
-                {/* Memo Column (Formerly Checkbox) */}
-                {/* Print: Fixed width, empty cell with border. Screen: Also shown for preview */}
+                {/* Memo Column */}
                 <div 
-                   className="hidden print:flex items-center justify-center p-0 print:block border-l-0" 
+                   className="hidden print:flex items-center justify-center p-0 print:block" 
                    style={memoColumnStyle}
                 >
-                    {/* Empty cell for writing. Vertical lines provided by parent flex container borders */}
+                    {/* Empty cell for writing. */}
                 </div>
                  
                  {/* On Screen Placeholder for Memo */}
                  <div className="w-20 flex items-center justify-center border-r border-slate-200 print:hidden text-xs text-slate-300">
                     (記入欄)
                  </div>
-
 
                 {/* Edit Actions (Screen Only) */}
                 <div className="w-20 flex items-center justify-center p-2 print:hidden">

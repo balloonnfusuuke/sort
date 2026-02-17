@@ -20,7 +20,8 @@ const App: React.FC = () => {
     columns: 3,
     fontSize: 12,       // 12px
     rowPadding: 2,      // 2px
-    checkboxSize: 20    // 20px
+    checkboxSize: 40,   // 40px for memo
+    headerFontSize: 16  // 16px for headers
   });
 
   const handleDataLoaded = useCallback(async (rawData: any[], useAi: boolean) => {
@@ -77,7 +78,7 @@ const App: React.FC = () => {
         @media print {
           @page {
             size: ${printSettings.orientation};
-            margin: 10mm;
+            margin: 5mm; /* Reduced margins to minimize wasted space */
           }
         }
       `}</style>
@@ -101,11 +102,11 @@ const App: React.FC = () => {
       </header>
 
       {/* Print Only Header */}
-      <div className="hidden print:flex items-end justify-between pt-8 pb-4 mb-4 border-b-4 border-black">
-        <h1 className="font-black tracking-tight" style={{ fontSize: '32px' }}>参加者名簿</h1>
+      <div className="hidden print:flex items-end justify-between pt-4 pb-2 mb-2 border-b-2 border-black">
+        <h1 className="font-black tracking-tight" style={{ fontSize: '24px' }}>参加者名簿</h1>
         <div className="text-right">
-             <p className="font-bold" style={{ fontSize: '14px' }}>{new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-             <p className="text-slate-600 mt-1" style={{ fontSize: '12px' }}>受付用リスト (50音順)</p>
+             <p className="font-bold" style={{ fontSize: '12px' }}>{new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+             <p className="text-slate-600 mt-0" style={{ fontSize: '10px' }}>受付用リスト (50音順)</p>
         </div>
       </div>
 

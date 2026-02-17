@@ -27,5 +27,6 @@ export interface PrintSettings {
   columns: number;      // 1-6
   fontSize: number;     // px (base font size)
   rowPadding: number;   // px (vertical padding)
-  checkboxSize: number; // px
+  checkboxSize: number; // px (memo width)
+  headerFontSize: number; // px (index header size)
 }
