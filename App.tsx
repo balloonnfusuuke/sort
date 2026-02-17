@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { AppState, Participant } from './types';
+import { AppState, Participant, PrintSettings as PrintSettingsType } from './types';
 import DropZone from './components/DropZone';
 import RosterTable from './components/RosterTable';
 import StatsBar from './components/StatsBar';
+import PrintSettings from './components/PrintSettings';
 import { normalizeRosterData } from './services/geminiService';
 import { processSimpleRoster } from './services/simpleService';
 import { AlertTriangle, Zap, Printer } from 'lucide-react';
@@ -12,6 +13,12 @@ const App: React.FC = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [usedAi, setUsedAi] = useState<boolean>(true);
+  
+  // Default Print Settings: Medium size, 3 columns (Good for A3)
+  const [printSettings, setPrintSettings] = useState<PrintSettingsType>({
+    fontSize: 'medium',
+    columns: 3
+  });
 
   const handleDataLoaded = useCallback(async (rawData: any[], useAi: boolean) => {
     setAppState(AppState.PROCESSING);
@@ -115,14 +122,17 @@ const App: React.FC = () => {
                 </div>
              )}
              
+             <PrintSettings settings={printSettings} onChange={setPrintSettings} />
+
              {/* Preview Note */}
              <div className="text-center mb-4 text-slate-400 text-sm print:hidden">
-                ▼ 以下の内容で印刷されます
+                ▼ 以下の内容で印刷されます ({printSettings.columns}列モード)
              </div>
 
             <RosterTable 
               participants={participants} 
               onUpdate={handleUpdateParticipant}
+              printSettings={printSettings}
             />
           </div>
         )}

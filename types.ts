@@ -19,3 +19,11 @@ export enum AppState {
   COMPLETE,
   ERROR
 }
+
+export type PrintFontSize = 'small' | 'medium' | 'large';
+export type PrintColumns = 2 | 3 | 4;
+
+export interface PrintSettings {
+  fontSize: PrintFontSize;
+  columns: PrintColumns;
+}
