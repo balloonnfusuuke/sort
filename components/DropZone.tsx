@@ -56,8 +56,8 @@ const DropZone: React.FC<DropZoneProps> = ({ onDataLoaded, setAppState, appState
       {/* Info Message */}
       <div className="text-center mb-6 text-sm text-slate-500">
         CSVまたはExcelファイルを読み込みます。<br/>
-        漢字が含まれる名前は最初「その他」に分類されますが、<br/>
-        後からAIを使って五十音順に振り分けることができます。
+        漢字が含まれる名前は「その他」に分類されます。<br/>
+        必要に応じてリスト上で手動編集してください。
       </div>
 
       <label 

@@ -4,16 +4,13 @@ import DropZone from './components/DropZone';
 import RosterTable from './components/RosterTable';
 import StatsBar from './components/StatsBar';
 import PrintSettings from './components/PrintSettings';
-import { predictReadings } from './services/geminiService';
 import { processSimpleRoster } from './services/simpleService';
-import { getIndexHeader } from './utils/stringUtils';
-import { AlertTriangle, Printer, Sparkles, ArrowDown } from 'lucide-react';
+import { AlertTriangle, Printer } from 'lucide-react';
 
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isAiSorting, setIsAiSorting] = useState(false);
   
   // Default Print Settings with numeric values
   const [printSettings, setPrintSettings] = useState<PrintSettingsType>({
@@ -30,7 +27,7 @@ const App: React.FC = () => {
     setErrorMsg(null);
 
     try {
-      // Always use Simple Processing first
+      // Always use Simple Processing
       await new Promise(resolve => setTimeout(resolve, 300));
       const resultData = processSimpleRoster(rawData);
       
@@ -62,56 +59,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Identify participants in "Others" (Originals that haven't been sorted manually or by AI into main indices)
-  const othersParticipants = participants.filter(p => getIndexHeader(p.reading) === 'その他');
-  
-  // Only show the banner if there are items in Others.
-  // Note: Even after sorting, we KEEP items in others, so this banner might stay visible.
-  // We could filter out items that already have a clone? 
-  // But for simplicity and per requirements ("Keep in others"), we just check count.
-  const hasOthers = othersParticipants.length > 0;
-
-  const handleSmartSort = async () => {
-      if (!hasOthers) return;
-      setIsAiSorting(true);
-      try {
-          const predictions = await predictReadings(othersParticipants);
-          
-          setParticipants(prev => {
-              const existingIds = new Set(prev.map(p => p.id));
-              const newEntries: Participant[] = [];
-
-              predictions.forEach(pred => {
-                  if (!pred.reading) return;
-                  
-                  // Find original
-                  const original = prev.find(p => p.id === pred.id);
-                  if (original) {
-                      const newId = `${original.id}-ai`;
-                      
-                      // Check if we already created a clone for this ID (prevent duplicates on multi-click)
-                      if (!existingIds.has(newId)) {
-                           newEntries.push({
-                               ...original,
-                               id: newId,
-                               reading: pred.reading
-                           });
-                      }
-                  }
-              });
-
-              // Append new sorted entries to the list, keeping the originals in 'Others'
-              const combined = [...prev, ...newEntries];
-              return combined.sort((a, b) => a.reading.localeCompare(b.reading, 'ja'));
-          });
-      } catch (e) {
-          alert("AIでの振り分け中にエラーが発生しました。");
-          console.error(e);
-      } finally {
-          setIsAiSorting(false);
-      }
-  };
-
   return (
     <div className="min-h-screen pb-32">
       {/* Dynamic Style Injection for Print Orientation */}
@@ -137,7 +84,7 @@ const App: React.FC = () => {
           </h1>
           <p className="text-slate-500 max-w-lg mx-auto">
             バラバラな予約リストをアップロードして、印刷用のきれいな名簿を作成します。
-            <br/>「その他」に入った漢字の名前は、AIで自動的に50音順の位置へコピーできます。
+            <br/>読み仮名がない漢字の名前は「その他」に入りますので、必要に応じて編集してください。
           </p>
         </div>
       </header>
@@ -168,39 +115,6 @@ const App: React.FC = () => {
         ) : (
           <div className="max-w-4xl mx-auto print:w-full print:max-w-none">
              
-             {/* AI Sort Suggestion Banner */}
-             {hasOthers && (
-                 <div className="mb-6 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between shadow-sm print:hidden">
-                    <div className="flex items-start mb-3 sm:mb-0">
-                        <div className="bg-white p-2 rounded-full shadow-sm mr-3 text-indigo-600">
-                            <Sparkles className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-indigo-900">「その他」に {othersParticipants.length} 件のデータがあります</h3>
-                            <p className="text-xs text-indigo-700 mt-1">
-                                漢字の名前など、読み仮名が不明なデータです。<br/>
-                                <span className="font-bold">AIで推測した読み仮名の位置にコピーを作成します。</span><br/>
-                                <span className="text-[10px] text-indigo-500">※元のデータも「その他」に残ります。</span>
-                            </p>
-                        </div>
-                    </div>
-                    <button 
-                        onClick={handleSmartSort}
-                        disabled={isAiSorting}
-                        className="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-lg shadow hover:bg-indigo-700 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isAiSorting ? (
-                            <>処理中...</>
-                        ) : (
-                            <>
-                                AIで自動振り分け
-                                <ArrowDown className="w-4 h-4 ml-2" />
-                            </>
-                        )}
-                    </button>
-                 </div>
-             )}
-
              <PrintSettings settings={printSettings} onChange={setPrintSettings} />
 
              {/* Preview Note */}
