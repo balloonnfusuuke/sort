@@ -49,7 +49,7 @@ const StatsBar: React.FC<StatsBarProps> = ({ participants, onReset, onCheckDupli
           <div className="w-px bg-slate-200 h-8 self-center"></div>
           <div className="flex flex-col">
             <span className="text-slate-500 text-xs">参加者合計</span>
-            <span className="font-bold text-xl text-indigo-600">{totalPeople}<span className="text-sm font-normal ml-1">名</span></span>
+            <span className="font-bold text-xl text-indigo-600">{totalPeople}<span className="text-sm font-normal ml-1">人</span></span>
           </div>
         </div>
 

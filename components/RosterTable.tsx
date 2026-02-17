@@ -305,7 +305,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                       </div>
                   ) : (
                       <span className={`font-bold print:font-black ${p.isRef ? 'text-slate-500' : 'text-slate-800'}`} style={countStyle}>
-                          {p.count}<span className="text-sm ml-0.5 font-normal" style={{ fontSize: `${baseSize * 0.6}px`}}>名</span>
+                          {p.count}<span className="text-sm ml-0.5 font-normal" style={{ fontSize: `${baseSize * 0.6}px`}}>人</span>
                       </span>
                   )}
                 </div>
@@ -397,7 +397,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                             className="w-16 print:w-9 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-0.5"
                             style={{ borderRight: '1px solid black' }} 
                         >
-                             <span className="text-slate-300 text-xs print:hidden">名</span>
+                             <span className="text-slate-300 text-xs print:hidden">人</span>
                         </div>
 
                          {/* Memo Column (Screen) */}

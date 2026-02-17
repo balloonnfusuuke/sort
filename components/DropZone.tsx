@@ -12,8 +12,8 @@ interface DropZoneProps {
 // Sample data
 const SAMPLE_DATA = [
   ["参加者名", "人数・備考"],
-  ["佐藤 健一郎 様", "2名"],
-  ["鈴木 (3名)", ""],
+  ["佐藤 健一郎 様", "2人"],
+  ["鈴木 (3人)", ""],
   ["田中 花子", "1"],
   ["高橋", "４"],
   ["Watanabe Ken", "1"],

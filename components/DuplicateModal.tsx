@@ -77,7 +77,7 @@ const DuplicateModal: React.FC<DuplicateModalProps> = ({ participants, onClose, 
                         <div>
                             <h3 className="font-bold text-lg text-slate-800">{group.name}</h3>
                             <div className="text-xs text-amber-700 mt-1">
-                                合計: <span className="font-bold text-base">{group.totalCount}</span> 名 / {group.participants.length}件のデータ
+                                合計: <span className="font-bold text-base">{group.totalCount}</span> 人 / {group.participants.length}件のデータ
                             </div>
                         </div>
                     </div>
@@ -91,7 +91,7 @@ const DuplicateModal: React.FC<DuplicateModalProps> = ({ participants, onClose, 
                                     {p.reading !== p.normalizedName && <span className="text-xs text-slate-400 ml-2">({p.reading})</span>}
                                 </div>
                                 <div className="flex items-center space-x-3">
-                                    <span className="font-bold text-slate-800 text-sm">{p.count}名</span>
+                                    <span className="font-bold text-slate-800 text-sm">{p.count}人</span>
                                     <button 
                                         onClick={() => onDelete(p.id)}
                                         className="text-slate-400 hover:text-red-500 p-1 flex items-center space-x-1 border border-slate-200 rounded hover:bg-red-50"
