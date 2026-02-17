@@ -124,11 +124,17 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
           const isStripe = index % 2 === 1;
           const stripeColor = '#f3f4f6'; // slate-100
 
+          // Calculate margin top:
+          // 1. First item: 0
+          // 2. New Group (Header shown): Add spacing (12px) to separate from previous group
+          // 3. Same Group: Collapse border (-1px)
+          const marginTop = index === 0 ? '0' : (showHeader ? '12px' : '-1px');
+
           return (
             <div 
               key={p.id} 
               className="print:break-inside-avoid mb-0 print:mb-0"
-              style={{ marginTop: index === 0 ? '0' : '-1px' }} // Collapse borders between items
+              style={{ marginTop: marginTop }} 
             >
               {showHeader && (
                 <div 
