@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Participant, PrintSettings } from '../types';
-import { User, Users, Pencil, Save, X, MessageSquare } from 'lucide-react';
+import { User, Users, Pencil, Save, X, MessageSquare, AlertCircle } from 'lucide-react';
 import { getIndexHeader } from '../utils/stringUtils';
 
 interface RosterTableProps {
@@ -12,6 +12,19 @@ interface RosterTableProps {
 const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, printSettings }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Participant>>({});
+
+  // Identify duplicates
+  const duplicateNames = useMemo(() => {
+    const counts = new Map<string, number>();
+    participants.forEach(p => {
+      counts.set(p.normalizedName, (counts.get(p.normalizedName) || 0) + 1);
+    });
+    const duplicates = new Set<string>();
+    counts.forEach((count, name) => {
+      if (count > 1) duplicates.add(name);
+    });
+    return duplicates;
+  }, [participants]);
 
   if (participants.length === 0) return null;
 
@@ -34,6 +47,13 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
       onUpdate(editingId, editForm);
       setEditingId(null);
       setEditForm({});
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveEditing();
     }
   };
 
@@ -120,6 +140,8 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
             lastHeader = currentHeader;
           }
           
+          const isDuplicate = duplicateNames.has(p.normalizedName);
+
           // Determine stripe color (skip for editing)
           const isStripe = index % 2 === 1;
           const stripeColor = '#f3f4f6'; // slate-100
@@ -133,8 +155,14 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
           return (
             <div 
               key={p.id} 
-              className="print:break-inside-avoid mb-0 print:mb-0"
-              style={{ marginTop: marginTop }} 
+              className={`print:break-inside-avoid mb-0 print:mb-0 ${isEditing ? 'z-20 relative shadow-lg ring-2 ring-indigo-500 rounded-lg my-2' : ''}`}
+              style={{ 
+                  marginTop: isEditing ? '8px' : marginTop,
+                  marginBottom: isEditing ? '8px' : '0',
+                  // Force full width when editing to ensure UI is usable
+                  columnSpan: isEditing ? 'all' : 'none',
+                  WebkitColumnSpan: isEditing ? 'all' : 'none' 
+              } as React.CSSProperties} 
             >
               {showHeader && (
                 <div 
@@ -151,58 +179,69 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
               <div 
                 className={`
                   flex items-stretch 
-                  ${isEditing ? 'bg-indigo-50' : 'hover:bg-slate-50 print:hover:bg-transparent'}
+                  ${isEditing ? 'bg-white' : 'hover:bg-slate-50 print:hover:bg-transparent'}
                   border-b border-slate-200 last:border-0 print:border-none
                 `}
                 style={{
                     ...rowStyle,
                     // In print, we force a full border box on every item
-                    border: '1px solid black',
+                    border: isEditing ? 'none' : '1px solid black',
                     // Zebra striping
-                    backgroundColor: (!isEditing && isStripe) ? stripeColor : 'transparent',
+                    backgroundColor: (!isEditing && isStripe) ? stripeColor : (isEditing ? '#fff' : 'transparent'),
                     // Ensure background prints
                     WebkitPrintColorAdjust: 'exact',
                     printColorAdjust: 'exact'
                 }}
               >
                 {/* No Column (Screen only) */}
-                <div className="w-12 flex items-center justify-center bg-slate-50 text-slate-500 text-sm font-mono border-r border-slate-200 print:hidden">
+                <div className="w-12 flex-shrink-0 flex items-center justify-center bg-slate-50 text-slate-500 text-sm font-mono border-r border-slate-200 print:hidden">
                   {index + 1}
                 </div>
 
                 {/* Name Column */}
                 <div 
-                    className="flex-1 px-2 flex flex-col justify-center border-r border-slate-200 print:border-r print:border-black"
-                    style={{ borderRight: '1px solid black' }} // Force internal vertical line
+                    className="flex-1 px-2 flex flex-col justify-center border-r border-slate-200 print:border-r print:border-black min-w-0"
+                    style={{ borderRight: isEditing ? 'none' : '1px solid black' }} // Force internal vertical line
                 >
                   {isEditing ? (
-                    <div className="flex flex-col space-y-2 py-2">
-                      <div className="flex flex-col">
-                          <label className="text-xs text-slate-500">表示名</label>
+                    <div className="flex flex-col space-y-2 py-2 w-full">
+                      <div className="flex flex-col w-full">
+                          <label className="text-xs text-slate-500 font-bold">表示名</label>
                           <input 
                               type="text" 
-                              className="border border-indigo-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              className="w-full border border-indigo-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               value={editForm.normalizedName || ''}
                               onChange={e => setEditForm({...editForm, normalizedName: e.target.value})}
+                              onKeyDown={handleKeyDown}
                           />
                       </div>
-                      <div className="flex flex-col">
-                          <label className="text-xs text-slate-500">並び替え用ヨミガナ</label>
+                      <div className="flex flex-col w-full">
+                          <label className="text-xs text-slate-500 font-bold">並び替え用ヨミガナ (Enterで保存)</label>
                           <input 
                               type="text" 
-                              className="border border-indigo-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-yellow-50"
+                              className="w-full border border-indigo-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-yellow-50"
                               value={editForm.reading || ''}
                               onChange={e => setEditForm({...editForm, reading: e.target.value})}
+                              onKeyDown={handleKeyDown}
+                              placeholder="カナを入力"
+                              autoFocus
                           />
                       </div>
                     </div>
                   ) : (
                     <>
-                      <div className="font-bold text-slate-900 leading-tight print:font-extrabold" style={nameStyle}>
-                        {p.normalizedName}
+                      <div className="flex items-center w-full min-w-0">
+                        <div className="font-bold text-slate-900 leading-tight print:font-extrabold truncate min-w-0" style={nameStyle}>
+                            {p.normalizedName}
+                        </div>
+                        {isDuplicate && (
+                            <div className="ml-1 text-amber-500 print:hidden flex-shrink-0" title="名前が重複しています">
+                                <AlertCircle className="w-4 h-4" />
+                            </div>
+                        )}
                       </div>
                       {(p.reading && p.reading !== p.normalizedName) ? (
-                          <div className="text-slate-500 font-mono mt-0.5 print:text-slate-600" style={readingStyle}>
+                          <div className="text-slate-500 font-mono mt-0.5 print:text-slate-600 truncate" style={readingStyle}>
                           {p.reading}
                           </div>
                       ) : null}
@@ -212,17 +251,19 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
 
                 {/* Count Column */}
                 <div 
-                    className="w-16 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-1"
-                    style={{ borderRight: '1px solid black' }} // Force internal vertical line
+                    className="w-16 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-1"
+                    style={{ borderRight: isEditing ? 'none' : '1px solid black' }} // Force internal vertical line
                 >
                   {isEditing ? (
-                      <div className="flex items-center">
+                      <div className="flex flex-col items-center">
+                          <label className="text-[10px] text-slate-500 mb-1">人数</label>
                           <input 
                               type="number" 
                               min="1"
-                              className="w-10 border border-indigo-300 rounded px-1 py-1 text-center font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                              className="w-12 border border-indigo-300 rounded px-1 py-1 text-center font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                               value={editForm.count || 1}
                               onChange={e => setEditForm({...editForm, count: parseInt(e.target.value) || 1})}
+                              onKeyDown={handleKeyDown}
                           />
                       </div>
                   ) : (
@@ -232,28 +273,30 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                   )}
                 </div>
 
-                {/* Memo Column */}
+                {/* Memo Column (Screen - Hide when editing) */}
+                {!isEditing && (
+                    <div className="w-20 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:hidden text-xs text-slate-300">
+                        (記入欄)
+                    </div>
+                )}
+
+                {/* Memo Column (Print) */}
                 <div 
                    className="hidden print:flex items-center justify-center p-0 print:block" 
                    style={memoColumnStyle}
                 >
                     {/* Empty cell for writing. */}
                 </div>
-                 
-                 {/* On Screen Placeholder for Memo */}
-                 <div className="w-20 flex items-center justify-center border-r border-slate-200 print:hidden text-xs text-slate-300">
-                    (記入欄)
-                 </div>
 
                 {/* Edit Actions (Screen Only) */}
-                <div className="w-20 flex items-center justify-center p-2 print:hidden">
+                <div className="w-20 flex-shrink-0 flex items-center justify-center p-2 print:hidden">
                   {isEditing ? (
                       <div className="flex flex-col space-y-1">
-                          <button onClick={saveEditing} className="p-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors" title="保存">
-                              <Save className="w-4 h-4" />
+                          <button onClick={saveEditing} className="p-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors shadow-sm" title="保存">
+                              <Save className="w-5 h-5" />
                           </button>
                           <button onClick={cancelEditing} className="p-1.5 bg-slate-200 text-slate-600 rounded hover:bg-slate-300 transition-colors" title="キャンセル">
-                              <X className="w-4 h-4" />
+                              <X className="w-5 h-5" />
                           </button>
                       </div>
                   ) : (
