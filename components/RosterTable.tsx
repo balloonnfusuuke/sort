@@ -39,52 +39,45 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
 
   let lastHeader = '';
 
-  // Calculate dynamic classes based on print settings
-  const getPrintStyles = () => {
-    switch (printSettings.fontSize) {
-      case 'small':
-        return {
-          container: 'print:columns-4 print:gap-4',
-          headerText: 'print:text-lg print:py-1 print:border-b-2 print:mt-2',
-          rowPadding: 'print:py-0.5',
-          nameText: 'print:text-sm print:font-bold',
-          readingText: 'print:text-[10px]',
-          countText: 'print:text-sm print:font-bold',
-          checkboxSize: 'print:w-6 print:h-6 print:border-2'
-        };
-      case 'large':
-        return {
-          container: 'print:columns-2 print:gap-8',
-          headerText: 'print:text-2xl print:py-2 print:border-b-4 print:mt-6',
-          rowPadding: 'print:py-3',
-          nameText: 'print:text-2xl print:font-extrabold',
-          readingText: 'print:text-sm',
-          countText: 'print:text-2xl print:font-black',
-          checkboxSize: 'print:w-12 print:h-12 print:border-4'
-        };
-      case 'medium':
-      default:
-        // Adjust columns based on setting, even for medium font
-        const cols = printSettings.columns === 4 ? 'print:columns-4 print:gap-4' : 
-                     printSettings.columns === 3 ? 'print:columns-3 print:gap-6' : 
-                     'print:columns-2 print:gap-8';
-        return {
-          container: cols,
-          headerText: 'print:text-xl print:py-1.5 print:border-b-2 print:mt-4',
-          rowPadding: 'print:py-1.5',
-          nameText: 'print:text-base print:font-bold',
-          readingText: 'print:text-xs',
-          countText: 'print:text-lg print:font-bold',
-          checkboxSize: 'print:w-8 print:h-8 print:border-2'
-        };
-    }
+  // Calculate dynamic styles
+  const baseSize = printSettings.fontSize;
+  
+  // Inline styles for print layout
+  const containerStyle = {
+    columnCount: printSettings.columns,
+    columnGap: '20px', // Standard gap
   };
 
-  // Override container column class if user explicitly set columns differently than default for size
-  const styles = getPrintStyles();
-  if (printSettings.columns === 2) styles.container = 'print:columns-2 print:gap-8';
-  if (printSettings.columns === 3) styles.container = 'print:columns-3 print:gap-6';
-  if (printSettings.columns === 4) styles.container = 'print:columns-4 print:gap-4';
+  const headerStyle = {
+    fontSize: `${baseSize * 1.3}px`,
+    marginTop: `${baseSize * 0.8}px`,
+    paddingTop: '4px',
+    paddingBottom: '4px',
+    marginBottom: '4px'
+  };
+
+  const rowStyle = {
+    paddingTop: `${printSettings.rowPadding}px`,
+    paddingBottom: `${printSettings.rowPadding}px`,
+  };
+
+  const nameStyle = {
+    fontSize: `${baseSize}px`,
+  };
+
+  const readingStyle = {
+    fontSize: `${Math.max(8, baseSize * 0.6)}px`, // Minimum 8px
+  };
+
+  const countStyle = {
+    fontSize: `${baseSize * 1.1}px`,
+  };
+
+  const checkboxStyle = {
+    width: `${printSettings.checkboxSize}px`,
+    height: `${printSettings.checkboxSize}px`,
+    borderWidth: `${Math.max(1, printSettings.checkboxSize / 10)}px`
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-white rounded-xl overflow-hidden print:max-w-none print:bg-transparent print:overflow-visible">
@@ -107,8 +100,8 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
         </div>
       </div>
 
-      {/* List Container - Uses CSS Columns for Print */}
-      <div className={`border-x border-b border-slate-200 print:border-none print:block ${styles.container}`}>
+      {/* List Container - Uses inline styles for column count in print */}
+      <div className="border-x border-b border-slate-200 print:border-none print:block" style={containerStyle}>
         {participants.map((p, index) => {
           const isEditing = editingId === p.id;
           const currentHeader = getIndexHeader(p.reading);
@@ -120,7 +113,10 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
           return (
             <div key={p.id} className="print:break-inside-avoid mb-0">
               {showHeader && (
-                <div className={`bg-slate-200 text-slate-800 font-extrabold text-xl px-4 py-1.5 border-b-2 border-slate-300 mt-0 print:bg-slate-200 print:text-black print:border-black print:first:mt-0 ${styles.headerText}`}>
+                <div 
+                  className="bg-slate-200 text-slate-800 font-extrabold px-4 border-b-2 border-slate-300 print:bg-slate-200 print:text-black print:border-black print:first:mt-0"
+                  style={headerStyle}
+                >
                   {currentHeader}
                 </div>
               )}
@@ -130,18 +126,18 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                   flex items-stretch border-b border-slate-200 last:border-0 
                   print:border-black print:border-b
                   ${isEditing ? 'bg-indigo-50' : 'hover:bg-slate-50 print:hover:bg-transparent'}
-                  ${styles.rowPadding}
                 `}
+                style={rowStyle}
               >
-                {/* No Column (Hidden in print to save space) */}
+                {/* No Column (Hidden in print) */}
                 <div className="w-12 flex items-center justify-center bg-slate-50 text-slate-500 text-sm font-mono border-r border-slate-200 print:hidden">
                   {index + 1}
                 </div>
 
                 {/* Name Column */}
-                <div className="flex-1 px-4 py-3 flex flex-col justify-center border-r border-slate-200 print:border-none print:px-2 print:py-0">
+                <div className="flex-1 px-4 flex flex-col justify-center border-r border-slate-200 print:border-none print:px-2">
                   {isEditing ? (
-                    <div className="flex flex-col space-y-2">
+                    <div className="flex flex-col space-y-2 py-2">
                       <div className="flex flex-col">
                           <label className="text-xs text-slate-500">表示名</label>
                           <input 
@@ -163,11 +159,11 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                     </div>
                   ) : (
                     <>
-                      <div className={`text-lg font-bold text-slate-900 leading-tight ${styles.nameText}`}>
+                      <div className="font-bold text-slate-900 leading-tight print:font-extrabold" style={nameStyle}>
                         {p.normalizedName}
                       </div>
                       {(p.reading && p.reading !== p.normalizedName) ? (
-                          <div className={`text-xs text-slate-500 font-mono mt-0.5 print:text-slate-600 ${styles.readingText}`}>
+                          <div className="text-slate-500 font-mono mt-0.5 print:text-slate-600" style={readingStyle}>
                           {p.reading}
                           </div>
                       ) : null}
@@ -189,8 +185,8 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                           <span className="ml-1 text-sm">名</span>
                       </div>
                   ) : (
-                      <span className={`text-lg font-bold text-slate-800 ${styles.countText}`}>
-                          {p.count}<span className="text-sm ml-1 font-normal print:text-[0.6em]">名</span>
+                      <span className="font-bold text-slate-800 print:font-black" style={countStyle}>
+                          {p.count}<span className="text-sm ml-1 font-normal" style={{ fontSize: `${baseSize * 0.6}px`}}>名</span>
                       </span>
                   )}
                 </div>
@@ -218,8 +214,8 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                 </div>
 
                 {/* Checkbox Column (Print Only - Optimized) */}
-                <div className="w-20 hidden print:flex items-center justify-center p-2 print:w-auto border-l-2 border-slate-300 print:border-black">
-                  <div className={`border-2 border-black rounded-sm bg-white ${styles.checkboxSize}`}>
+                <div className="w-20 hidden print:flex items-center justify-center p-2 print:w-auto border-l-2 border-slate-300 print:border-black print:pl-3">
+                  <div className="border-black rounded-sm bg-white" style={checkboxStyle}>
                     {/* Empty box for writing a check mark */}
                   </div>
                 </div>

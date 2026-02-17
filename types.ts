@@ -20,10 +20,12 @@ export enum AppState {
   ERROR
 }
 
-export type PrintFontSize = 'small' | 'medium' | 'large';
-export type PrintColumns = 2 | 3 | 4;
+export type PageOrientation = 'portrait' | 'landscape';
 
 export interface PrintSettings {
-  fontSize: PrintFontSize;
-  columns: PrintColumns;
+  orientation: PageOrientation;
+  columns: number;      // 1-6
+  fontSize: number;     // px (base font size)
+  rowPadding: number;   // px (vertical padding)
+  checkboxSize: number; // px
 }

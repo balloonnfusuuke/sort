@@ -14,10 +14,13 @@ const App: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [usedAi, setUsedAi] = useState<boolean>(true);
   
-  // Default Print Settings: Medium size, 3 columns (Good for A3)
+  // Default Print Settings with numeric values
   const [printSettings, setPrintSettings] = useState<PrintSettingsType>({
-    fontSize: 'medium',
-    columns: 3
+    orientation: 'landscape',
+    columns: 3,
+    fontSize: 12,       // 12px
+    rowPadding: 2,      // 2px
+    checkboxSize: 20    // 20px
   });
 
   const handleDataLoaded = useCallback(async (rawData: any[], useAi: boolean) => {
@@ -31,12 +34,10 @@ const App: React.FC = () => {
       if (useAi) {
         resultData = await normalizeRosterData(rawData);
       } else {
-        // Delay slightly to show UI state change, looks better
         await new Promise(resolve => setTimeout(resolve, 500));
         resultData = processSimpleRoster(rawData);
       }
       
-      // Sort by Reading (50-on jun)
       const sorted = resultData.sort((a, b) => a.reading.localeCompare(b.reading, 'ja'));
       
       setParticipants(sorted);
@@ -57,7 +58,6 @@ const App: React.FC = () => {
         const updatedList = prev.map(p => 
             p.id === id ? { ...p, ...updates } : p
         );
-        // Re-sort automatically whenever data changes
         return updatedList.sort((a, b) => a.reading.localeCompare(b.reading, 'ja'));
     });
   };
@@ -72,6 +72,16 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen pb-32">
+      {/* Dynamic Style Injection for Print Orientation */}
+      <style>{`
+        @media print {
+          @page {
+            size: ${printSettings.orientation};
+            margin: 10mm;
+          }
+        }
+      `}</style>
+
       {/* Header */}
       <header className="bg-white border-b border-slate-200 pt-8 pb-6 px-4 no-print">
         <div className="max-w-4xl mx-auto text-center">
@@ -91,11 +101,11 @@ const App: React.FC = () => {
       </header>
 
       {/* Print Only Header */}
-      <div className="hidden print:flex items-end justify-between pt-8 pb-4 mb-8 border-b-4 border-black">
-        <h1 className="text-5xl font-black tracking-tight">参加者名簿</h1>
+      <div className="hidden print:flex items-end justify-between pt-8 pb-4 mb-4 border-b-4 border-black">
+        <h1 className="font-black tracking-tight" style={{ fontSize: '32px' }}>参加者名簿</h1>
         <div className="text-right">
-             <p className="text-2xl font-bold">{new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-             <p className="text-lg text-slate-600 mt-1">受付用リスト (50音順)</p>
+             <p className="font-bold" style={{ fontSize: '14px' }}>{new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+             <p className="text-slate-600 mt-1" style={{ fontSize: '12px' }}>受付用リスト (50音順)</p>
         </div>
       </div>
 
@@ -125,8 +135,8 @@ const App: React.FC = () => {
              <PrintSettings settings={printSettings} onChange={setPrintSettings} />
 
              {/* Preview Note */}
-             <div className="text-center mb-4 text-slate-400 text-sm print:hidden">
-                ▼ 以下の内容で印刷されます ({printSettings.columns}列モード)
+             <div className="text-center mb-4 text-slate-400 text-xs print:hidden">
+                ▼ 以下は印刷イメージのプレビューです。指定した列数 ({printSettings.columns}列) と文字サイズ ({printSettings.fontSize}px) で表示されます。
              </div>
 
             <RosterTable 
