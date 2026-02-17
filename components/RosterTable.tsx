@@ -46,7 +46,9 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
   // Inline styles for print layout
   const containerStyle = {
     columnCount: printSettings.columns,
-    columnGap: '10px', // Tighter gap to reduce wasted space
+    columnGap: '0px', // Gap handled by margins to keep borders aligned
+    paddingTop: '1px', 
+    paddingLeft: '1px', 
   };
 
   const headerStyle = {
@@ -54,7 +56,9 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
     paddingTop: '2px',
     paddingBottom: '2px',
     marginTop: '0px',
-    marginBottom: '0px',
+    marginBottom: '-1px', // Collapse with the row below
+    position: 'relative' as const,
+    zIndex: 10,
     lineHeight: '1.2'
   };
 
@@ -116,11 +120,18 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
           }
 
           return (
-            <div key={p.id} className="print:break-inside-avoid mb-0 print:border-l print:border-black print:first:border-t-0">
+            <div 
+              key={p.id} 
+              className="print:break-inside-avoid mb-0 print:mb-0"
+              style={{ marginTop: index === 0 ? '0' : '-1px' }} // Collapse borders between items
+            >
               {showHeader && (
                 <div 
-                  className="bg-slate-200 text-slate-800 font-extrabold px-2 border-y border-r border-slate-400 print:bg-slate-200 print:text-black print:border-black print:border-y print:border-r print:border-l-0"
-                  style={headerStyle}
+                  className="bg-slate-200 text-slate-800 font-extrabold px-2 border border-slate-400 print:bg-slate-200 print:text-black"
+                  style={{
+                      ...headerStyle,
+                      border: '1px solid black', // Force border in print
+                  }}
                 >
                   {currentHeader}
                 </div>
@@ -128,11 +139,16 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
               
               <div 
                 className={`
-                  flex items-stretch border-b border-r border-slate-200 last:border-0 
-                  print:border-black print:border-b print:border-r print:border-l-0
+                  flex items-stretch 
                   ${isEditing ? 'bg-indigo-50' : 'hover:bg-slate-50 print:hover:bg-transparent'}
+                  border-b border-slate-200 last:border-0 print:border-none
                 `}
-                style={rowStyle}
+                style={{
+                    ...rowStyle,
+                    // In print, we force a full border box on every item to ensure lines appear
+                    // The negative margin on the parent container handles the collapsing
+                    border: '1px solid black',
+                }}
               >
                 {/* No Column (Screen only) */}
                 <div className="w-12 flex items-center justify-center bg-slate-50 text-slate-500 text-sm font-mono border-r border-slate-200 print:hidden">
@@ -140,7 +156,10 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                 </div>
 
                 {/* Name Column */}
-                <div className="flex-1 px-2 flex flex-col justify-center border-r border-slate-200 print:border-r print:border-black">
+                <div 
+                    className="flex-1 px-2 flex flex-col justify-center border-r border-slate-200 print:border-r print:border-black"
+                    style={{ borderRight: '1px solid black' }} // Force internal vertical line
+                >
                   {isEditing ? (
                     <div className="flex flex-col space-y-2 py-2">
                       <div className="flex flex-col">
@@ -177,7 +196,10 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                 </div>
 
                 {/* Count Column */}
-                <div className="w-16 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-1">
+                <div 
+                    className="w-16 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-1"
+                    style={{ borderRight: '1px solid black' }} // Force internal vertical line
+                >
                   {isEditing ? (
                       <div className="flex items-center">
                           <input 
