@@ -69,16 +69,22 @@ export const processSimpleRoster = (rawData: any[]): Participant[] => {
       if (!cellVal) continue;
 
       // Check for Count (contains numbers)
-      // e.g. "2名", "3", "１名"
-      // We check if it looks like a number, or ends with '名'/'人'
+      // Relaxed logic: If the cell contains ANY number, try to parse it.
+      // This handles "8名以上", "約10名", "8" correctly.
       const numMatch = cellVal.match(/[0-9０-９]+/);
-      const isCountFormat = /[0-9０-９]+(名|人)?$/.test(cellVal) || (numMatch && cellVal.length < 5 && !isNaN(Number(cellVal)));
+      
+      if (numMatch) {
+        // Convert full-width numbers to half-width
+        const numStr = numMatch[0].replace(/[０-９]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+        const parsed = parseInt(numStr, 10);
 
-      if (isCountFormat) {
-        // Likely a count column
-        const numStr = numMatch ? numMatch[0].replace(/[０-９]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)) : "1";
-        count = parseInt(numStr, 10) || 1;
-        continue; // Found count, move to next column
+        // Sanity check: Ensure it's a valid number. 
+        // We accept it if it's not a phone-number-like string length, though strict length check might be too aggressive.
+        // Assuming "Name and Count only" data, any number < 1000 is likely the count.
+        if (!isNaN(parsed) && parsed < 1000) {
+           count = parsed;
+           continue; // Found count, move to next column scan
+        }
       }
 
       // Check for Reading (Katakana or Hiragana)
