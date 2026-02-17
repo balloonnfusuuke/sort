@@ -6,24 +6,65 @@ export const processSimpleRoster = (rawData: any[]): Participant[] => {
   let startIndex = 0;
   if (rawData.length > 0) {
     const firstRow = rawData[0];
-    if (firstRow[0] === "名前" || firstRow[0] === "Name" || firstRow[0] === "参加者名") {
+    const firstCell = firstRow[0] ? String(firstRow[0]).trim() : "";
+    
+    // Expanded header check to include "No" or "ID"
+    const isHeader = ["名前", "Name", "参加者名", "氏名", "No", "No.", "ID"].includes(firstCell) || 
+                     (firstRow[1] && ["名前", "Name", "氏名", "氏名(漢字)"].includes(String(firstRow[1]).trim()));
+
+    if (isHeader) {
       startIndex = 1;
     }
   }
 
+  // Column Detection Heuristic:
+  // Check if Column 0 is likely an ID column (numeric) and Column 1 is the actual name (string).
+  // We sample up to 10 rows.
+  let col0IsNumericCount = 0;
+  let sampleCount = 0;
+  const sampleLimit = 10;
+  
+  for (let i = startIndex; i < Math.min(rawData.length, startIndex + sampleLimit); i++) {
+     const row = rawData[i];
+     if (!row || row.length < 2) continue; // Need at least 2 cols to justify skipping col 0
+     
+     const cell0 = row[0];
+     // Check if cell0 is a number or a numeric string (e.g. "1", "001")
+     const isNum = (typeof cell0 === 'number') || 
+                   (typeof cell0 === 'string' && /^[0-9]+$/.test(cell0.trim()));
+     
+     // Check if cell1 is NOT a pure number (likely a name)
+     const cell1 = row[1];
+     const cell1IsString = typeof cell1 === 'string' && !/^[0-9]+$/.test(cell1.trim());
+
+     if (isNum && cell1IsString) {
+         col0IsNumericCount++;
+     }
+     sampleCount++;
+  }
+
+  // If >50% of sampled rows look like [Number, String...], assume Col 1 is Name
+  let nameColIdx = 0;
+  if (sampleCount > 0 && (col0IsNumericCount / sampleCount) > 0.5) {
+      nameColIdx = 1;
+  }
+
   const processedData = rawData.slice(startIndex).map((row, index) => {
-    // 1. Name is usually the first column
-    let name = row[0] ? String(row[0]).trim() : "不明";
+    // 1. Extract Name based on determined column
+    let name = row[nameColIdx] ? String(row[nameColIdx]).trim() : "不明";
 
     // Basic cleaning: remove "様", "殿", "先生" if they are at the end, and trim spaces
-    name = name.replace(/[ 　]+(様|殿|先生|さん)$/, '').trim();
+    name = name.replace(/[ 　]+(様|殿|先生|さん|君)$/, '').trim();
 
     let count = 1;
     let reading = "";
 
-    // 2. Scan columns 1 to 4 to find "Reading" (Kana) and "Count" (Number)
-    // This allows formats like [Name, Count], [Name, Reading, Count], or [Name, Count, Reading]
-    for (let i = 1; i < Math.min(row.length, 5); i++) {
+    // 2. Scan columns AFTER the name column to find "Reading" (Kana) and "Count" (Number)
+    // We scan up to 4 columns after the name
+    const scanStart = nameColIdx + 1;
+    const scanEnd = Math.min(row.length, scanStart + 4);
+
+    for (let i = scanStart; i < scanEnd; i++) {
       const cellVal = row[i] ? String(row[i]).trim() : "";
       if (!cellVal) continue;
 
@@ -50,7 +91,7 @@ export const processSimpleRoster = (rawData: any[]): Participant[] => {
       }
     }
 
-    // Fallback: if no reading found, use name (sorting will be by code)
+    // Fallback: if no reading found, use name (sorting will be by code/Others)
     if (!reading) {
       reading = name;
     }

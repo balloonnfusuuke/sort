@@ -5,6 +5,7 @@ import RosterTable from './components/RosterTable';
 import StatsBar from './components/StatsBar';
 import PrintSettings from './components/PrintSettings';
 import { processSimpleRoster } from './services/simpleService';
+import { getIndexHeader } from './utils/stringUtils';
 import { AlertTriangle, Printer } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -44,10 +45,35 @@ const App: React.FC = () => {
 
   const handleUpdateParticipant = (id: string, updates: Partial<Participant>) => {
     setParticipants(prev => {
-        const updatedList = prev.map(p => 
-            p.id === id ? { ...p, ...updates } : p
+        const target = prev.find(p => p.id === id);
+        if (!target) return prev;
+
+        // Check if anything actually changed
+        const hasChanges = (Object.keys(updates) as Array<keyof Participant>).some(
+            key => updates[key] !== undefined && updates[key] !== target[key]
         );
-        return updatedList.sort((a, b) => a.reading.localeCompare(b.reading, 'ja'));
+        if (!hasChanges) return prev;
+
+        // Check if currently in 'Others'
+        const isInOthers = getIndexHeader(target.reading) === 'その他';
+
+        if (isInOthers) {
+            // Clone logic: Keep original in 'Others', add new corrected entry
+            const newParticipant: Participant = {
+                ...target,
+                ...updates,
+                id: `${target.id}-copy-${Date.now()}`
+            };
+            
+            const newList = [...prev, newParticipant];
+             return newList.sort((a, b) => a.reading.localeCompare(b.reading, 'ja'));
+        } else {
+             // Normal update logic: Update in place
+            const updatedList = prev.map(p => 
+                p.id === id ? { ...p, ...updates } : p
+            );
+            return updatedList.sort((a, b) => a.reading.localeCompare(b.reading, 'ja'));
+        }
     });
   };
 
