@@ -347,7 +347,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                       marginTop: '12px'
                   }}
                 >
-                  当日枠
+                  メモ
                 </div>
                 {walkInRows.map((_, i) => (
                     <div 
@@ -367,11 +367,13 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                         
                          {/* Name Column (Empty) */}
                         <div 
-                            className="flex-1 px-2 flex items-center justify-end border-r border-slate-200 print:border-r print:border-black min-w-0"
+                            className="flex-1 px-2 flex items-center justify-end border-r border-slate-200 print:border-r print:border-black min-w-0 relative"
                             style={{ borderRight: '1px solid black' }}
                         >
-                            {/* Line for handwriting? Or just empty. */}
-                            <span className="text-slate-300 text-xs print:hidden">(手書き用)</span>
+                            {/* Insert invisible text with nameStyle to force height */}
+                            <div style={nameStyle} className="invisible pointer-events-none">A</div>
+                            
+                            <span className="text-slate-300 text-xs print:hidden absolute right-2 top-1/2 -translate-y-1/2">(手書き用)</span>
                         </div>
 
                          {/* Count Column (Empty) */}

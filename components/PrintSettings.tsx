@@ -150,6 +150,23 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => 
           />
         </div>
 
+        {/* New: Title Font Size */}
+        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+           <label className="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between">
+            <div className="flex items-center"><Heading className="w-3 h-3 mr-1" /> タイトル文字サイズ</div>
+            <span className="text-indigo-600">{settings.titleFontSize || 24}px</span>
+          </label>
+          <input 
+            type="range" 
+            min="16" 
+            max="64" 
+            step="1"
+            value={settings.titleFontSize || 24}
+            onChange={(e) => handleChange('titleFontSize', parseInt(e.target.value))}
+            className="w-full accent-indigo-600"
+          />
+        </div>
+
         {/* 5. Row Padding */}
         <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
            <label className="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between">
@@ -187,7 +204,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => 
         {/* 7. Walk-in Slots */}
         <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
            <label className="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between">
-            <div className="flex items-center"><PlusSquare className="w-3 h-3 mr-1" /> 当日枠 (空行)</div>
+            <div className="flex items-center"><PlusSquare className="w-3 h-3 mr-1" /> メモ欄 (空行)</div>
             <span className="text-indigo-600">{settings.walkInSlots}行</span>
           </label>
            <div className="flex items-center gap-2">

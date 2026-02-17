@@ -25,6 +25,7 @@ const App: React.FC = () => {
     rowPadding: 2,      // 2px
     checkboxSize: 40,   // 40px for memo
     headerFontSize: 16,  // 16px for headers
+    titleFontSize: 24,   // 24px for title
     
     // Header Defaults
     title: '参加者名簿',
@@ -190,7 +191,7 @@ const App: React.FC = () => {
 
       {/* Print Only Header (Dynamic) */}
       <div className="hidden print:flex items-end justify-between pt-4 pb-2 mb-2 border-b-2 border-black">
-        <h1 className="font-black tracking-tight" style={{ fontSize: '24px' }}>{printSettings.title}</h1>
+        <h1 className="font-black tracking-tight" style={{ fontSize: `${printSettings.titleFontSize}px`, lineHeight: 1.1 }}>{printSettings.title}</h1>
         <div className="text-right">
              <p className="font-bold" style={{ fontSize: '12px' }}>{printSettings.date}</p>
              <p className="text-slate-600 mt-0" style={{ fontSize: '10px' }}>{printSettings.subtitle}</p>

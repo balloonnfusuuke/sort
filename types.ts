@@ -29,6 +29,7 @@ export interface PrintSettings {
   rowPadding: number;   // px (vertical padding)
   checkboxSize: number; // px (memo width)
   headerFontSize: number; // px (index header size)
+  titleFontSize: number; // px (main title size)
   
   // Header Customization
   title: string;
