@@ -13,12 +13,10 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Participant>>({});
 
-  // Identify duplicates (excluding refs if needed, but for "Duplicate Warning" we usually want to see true collisions. 
-  // However, isRef entries create intentional duplicates. Let's filter out refs for the duplicate warning logic.)
+  // Identify duplicates
   const duplicateNames = useMemo(() => {
     const counts = new Map<string, number>();
     participants.forEach(p => {
-      // Don't count refs as duplicates of real entries for warning purposes
       if (p.isRef) return; 
       counts.set(p.normalizedName, (counts.get(p.normalizedName) || 0) + 1);
     });
@@ -28,8 +26,6 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
     });
     return duplicates;
   }, [participants]);
-
-  // if (participants.length === 0) return null; // allow rendering for walk-in slots only if needed? likely not.
 
   const startEditing = (p: Participant) => {
     setEditingId(p.id);
@@ -105,9 +101,6 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
       return Array.from({ length: printSettings.walkInSlots }).map((_, i) => i);
   }, [printSettings.walkInSlots]);
 
-  // Total items = participants + 1 header per group (roughly) + walk-ins
-  // We handle headers inline.
-
   return (
     <div className="w-full max-w-4xl mx-auto bg-white rounded-xl overflow-hidden print:max-w-none print:bg-transparent print:overflow-visible shadow-sm border border-slate-200 print:border-none print:shadow-none">
       
@@ -125,6 +118,13 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
           .roster-break-avoid {
             break-inside: avoid;
             page-break-inside: avoid;
+          }
+          /* This class makes the header span across all columns in print mode */
+          .print-span-all {
+            column-span: all;
+            -webkit-column-span: all;
+            display: block; /* Ensure it behaves as a block to span */
+            margin-bottom: 8px; /* Slight margin before columns start */
           }
           /* Custom tight classes for print */
           .print-tight-mt-header {
@@ -159,6 +159,19 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
       {/* Screen: Fixed height, scrollable, single column. Print: Auto height, multi-column (via style tag) */}
       <div className="roster-list-container h-[60vh] overflow-y-auto bg-white print:bg-transparent scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
         
+        {/* PRINT ONLY: Title Header embedded inside the multi-column container */}
+        <div className="hidden print:block print-span-all border-b-2 border-black pb-1">
+             <div className="flex items-end justify-between">
+                <h1 className="font-black tracking-tight" style={{ fontSize: `${printSettings.titleFontSize}px`, lineHeight: 1.1 }}>
+                    {printSettings.title}
+                </h1>
+                <div className="text-right">
+                    <p className="font-bold" style={{ fontSize: '12px' }}>{printSettings.date}</p>
+                    <p className="text-slate-600 mt-0" style={{ fontSize: '10px' }}>{printSettings.subtitle}</p>
+                </div>
+             </div>
+        </div>
+
         {/* Render Participants */}
         {participants.map((p, index) => {
           const isEditing = editingId === p.id;
@@ -175,8 +188,6 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
           const stripeColor = p.isRef ? '#fafafa' : '#f3f4f6'; // lighter for refs
 
           // Calculate margin top class logic
-          // Default screen: mt-3 (12px) if header, -mt-[1px] if not
-          // Print: want tighter spacing. We use 'print-tight-mt-header' class defined in style tag to override.
           const marginTopClass = index === 0 ? 'mt-0' : (showHeader ? 'mt-3 print-tight-mt-header' : '-mt-[1px]');
 
           return (

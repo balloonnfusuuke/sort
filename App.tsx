@@ -176,9 +176,7 @@ const App: React.FC = () => {
             <br/>読み仮名がない漢字の名前は「その他」に入りますので、必要に応じて編集してください。
           </p>
 
-          {/* Help Button positioned absolutely to the right of header content or just inline if preferred. 
-              Let's put it top-right of the header area.
-          */}
+          {/* Help Button */}
           <button 
             onClick={() => setShowHelpModal(true)}
             className="absolute top-0 right-0 p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-full transition-colors"
@@ -189,14 +187,11 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Print Only Header (Dynamic) */}
-      <div className="hidden print:flex items-end justify-between pt-2 pb-1 mb-1 border-b-2 border-black">
-        <h1 className="font-black tracking-tight" style={{ fontSize: `${printSettings.titleFontSize}px`, lineHeight: 1.1 }}>{printSettings.title}</h1>
-        <div className="text-right">
-             <p className="font-bold" style={{ fontSize: '12px' }}>{printSettings.date}</p>
-             <p className="text-slate-600 mt-0" style={{ fontSize: '10px' }}>{printSettings.subtitle}</p>
-        </div>
-      </div>
+      {/* 
+         The separate print header is REMOVED from here.
+         It has been moved inside RosterTable.tsx using column-span: all 
+         to prevent page break separation issues.
+      */}
 
       <main className="px-4 py-8 print:py-0 print:px-0">
         {errorMsg && (
