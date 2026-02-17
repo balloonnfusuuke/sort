@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Participant, PrintSettings } from '../types';
-import { User, Users, CheckSquare, Pencil, Save, X } from 'lucide-react';
+import { User, Users, Pencil, Save, X, MessageSquare } from 'lucide-react';
 import { getIndexHeader } from '../utils/stringUtils';
 
 interface RosterTableProps {
@@ -45,7 +45,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
   // Inline styles for print layout
   const containerStyle = {
     columnCount: printSettings.columns,
-    columnGap: '20px', // Standard gap
+    columnGap: '15px', 
   };
 
   const headerStyle = {
@@ -53,7 +53,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
     marginTop: `${baseSize * 0.8}px`,
     paddingTop: '4px',
     paddingBottom: '4px',
-    marginBottom: '4px'
+    marginBottom: '0px' // Connect to table below
   };
 
   const rowStyle = {
@@ -72,11 +72,11 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
   const countStyle = {
     fontSize: `${baseSize * 1.1}px`,
   };
-
-  const checkboxStyle = {
+  
+  // This now controls the width of the memo column, not the size of a checkbox icon
+  const memoColumnStyle = {
     width: `${printSettings.checkboxSize}px`,
-    height: `${printSettings.checkboxSize}px`,
-    borderWidth: `${Math.max(1, printSettings.checkboxSize / 10)}px`
+    minWidth: `${printSettings.checkboxSize}px`,
   };
 
   return (
@@ -94,6 +94,10 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
         <div className="w-24 text-center font-bold text-sm uppercase tracking-wider flex items-center justify-center">
             <Users className="w-4 h-4 mr-2" />
             人数
+        </div>
+        <div className="w-20 text-center font-bold text-sm uppercase tracking-wider flex items-center justify-center">
+            <MessageSquare className="w-4 h-4 mr-2" />
+            記入欄
         </div>
         <div className="w-20 text-center font-bold text-sm uppercase tracking-wider flex items-center justify-center">
             編集
@@ -114,7 +118,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
             <div key={p.id} className="print:break-inside-avoid mb-0">
               {showHeader && (
                 <div 
-                  className="bg-slate-200 text-slate-800 font-extrabold px-4 border-b-2 border-slate-300 print:bg-slate-200 print:text-black print:border-black print:first:mt-0"
+                  className="bg-slate-200 text-slate-800 font-extrabold px-4 border-b border-slate-400 print:bg-slate-200 print:text-black print:border-black print:border print:first:mt-0"
                   style={headerStyle}
                 >
                   {currentHeader}
@@ -124,18 +128,18 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
               <div 
                 className={`
                   flex items-stretch border-b border-slate-200 last:border-0 
-                  print:border-black print:border-b
+                  print:border-black print:border-b print:border-x
                   ${isEditing ? 'bg-indigo-50' : 'hover:bg-slate-50 print:hover:bg-transparent'}
                 `}
                 style={rowStyle}
               >
-                {/* No Column (Hidden in print) */}
+                {/* No Column (Screen only) */}
                 <div className="w-12 flex items-center justify-center bg-slate-50 text-slate-500 text-sm font-mono border-r border-slate-200 print:hidden">
                   {index + 1}
                 </div>
 
                 {/* Name Column */}
-                <div className="flex-1 px-4 flex flex-col justify-center border-r border-slate-200 print:border-none print:px-2">
+                <div className="flex-1 px-4 flex flex-col justify-center border-r border-slate-200 print:border-r print:border-black print:px-2">
                   {isEditing ? (
                     <div className="flex flex-col space-y-2 py-2">
                       <div className="flex flex-col">
@@ -172,7 +176,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                 </div>
 
                 {/* Count Column */}
-                <div className="w-24 flex items-center justify-center border-r border-slate-200 print:border-none print:w-auto print:justify-end print:pr-2">
+                <div className="w-24 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:w-auto print:px-2">
                   {isEditing ? (
                       <div className="flex items-center">
                           <input 
@@ -190,6 +194,21 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                       </span>
                   )}
                 </div>
+
+                {/* Memo Column (Formerly Checkbox) */}
+                {/* Print: Fixed width, empty cell with border. Screen: Also shown for preview */}
+                <div 
+                   className="hidden print:flex items-center justify-center p-0 print:block border-l-0" 
+                   style={memoColumnStyle}
+                >
+                    {/* Empty cell for writing. Vertical lines provided by parent flex container borders */}
+                </div>
+                 
+                 {/* On Screen Placeholder for Memo */}
+                 <div className="w-20 flex items-center justify-center border-r border-slate-200 print:hidden text-xs text-slate-300">
+                    (記入欄)
+                 </div>
+
 
                 {/* Edit Actions (Screen Only) */}
                 <div className="w-20 flex items-center justify-center p-2 print:hidden">
@@ -213,12 +232,6 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                   )}
                 </div>
 
-                {/* Checkbox Column (Print Only - Optimized) */}
-                <div className="w-20 hidden print:flex items-center justify-center p-2 print:w-auto border-l-2 border-slate-300 print:border-black print:pl-3">
-                  <div className="border-black rounded-sm bg-white" style={checkboxStyle}>
-                    {/* Empty box for writing a check mark */}
-                  </div>
-                </div>
               </div>
             </div>
           );

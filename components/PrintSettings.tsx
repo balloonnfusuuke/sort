@@ -1,6 +1,6 @@
 import React from 'react';
 import { PrintSettings as PrintSettingsType, PageOrientation } from '../types';
-import { Settings, Grid, Type, MoveVertical, Square, File as FileIcon } from 'lucide-react';
+import { Settings, Grid, Type, MoveVertical, PenLine, File as FileIcon } from 'lucide-react';
 
 interface PrintSettingsProps {
   settings: PrintSettingsType;
@@ -109,17 +109,17 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => 
           />
         </div>
 
-        {/* 5. Checkbox Size */}
+        {/* 5. Memo Column Width (previously Checkbox) */}
         <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
            <label className="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between">
-            <div className="flex items-center"><Square className="w-3 h-3 mr-1" /> チェックボックス</div>
+            <div className="flex items-center"><PenLine className="w-3 h-3 mr-1" /> 記入欄の幅 (メモ用)</div>
             <span className="text-indigo-600">{settings.checkboxSize}px</span>
           </label>
            <input 
             type="range" 
-            min="10" 
-            max="40" 
-            step="1"
+            min="20" 
+            max="150" 
+            step="5"
             value={settings.checkboxSize}
             onChange={(e) => handleChange('checkboxSize', parseInt(e.target.value))}
             className="w-full accent-indigo-600"
