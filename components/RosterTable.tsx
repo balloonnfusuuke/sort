@@ -46,7 +46,8 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
   // Inline styles for print layout
   const containerStyle = {
     columnCount: printSettings.columns,
-    columnGap: '0px', // Gap handled by margins to keep borders aligned
+    columnGap: '6mm', // Gap for the rule
+    columnRule: '1px solid #000', // Solid line between columns
     paddingTop: '1px', 
     paddingLeft: '1px', 
   };
@@ -118,6 +119,10 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
           if (showHeader) {
             lastHeader = currentHeader;
           }
+          
+          // Determine stripe color (skip for editing)
+          const isStripe = index % 2 === 1;
+          const stripeColor = '#f3f4f6'; // slate-100
 
           return (
             <div 
@@ -145,9 +150,13 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                 `}
                 style={{
                     ...rowStyle,
-                    // In print, we force a full border box on every item to ensure lines appear
-                    // The negative margin on the parent container handles the collapsing
+                    // In print, we force a full border box on every item
                     border: '1px solid black',
+                    // Zebra striping
+                    backgroundColor: (!isEditing && isStripe) ? stripeColor : 'transparent',
+                    // Ensure background prints
+                    WebkitPrintColorAdjust: 'exact',
+                    printColorAdjust: 'exact'
                 }}
               >
                 {/* No Column (Screen only) */}
