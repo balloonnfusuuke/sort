@@ -13,7 +13,10 @@ export const processSimpleRoster = (rawData: any[]): Participant[] => {
 
   const processedData = rawData.slice(startIndex).map((row, index) => {
     // 1. Name is usually the first column
-    const name = row[0] ? String(row[0]).trim() : "不明";
+    let name = row[0] ? String(row[0]).trim() : "不明";
+
+    // Basic cleaning: remove "様", "殿", "先生" if they are at the end, and trim spaces
+    name = name.replace(/[ 　]+(様|殿|先生|さん)$/, '').trim();
 
     let count = 1;
     let reading = "";
@@ -55,7 +58,7 @@ export const processSimpleRoster = (rawData: any[]): Participant[] => {
     return {
       id: `simple-${index}-${Date.now()}`,
       originalName: name,
-      normalizedName: name,
+      normalizedName: name, // In simple mode, normalized is same as cleaned original
       reading: reading,
       count: count,
     };

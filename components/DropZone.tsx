@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { FileSpreadsheet, FileText, Loader2, PlayCircle, Sparkles, Zap } from 'lucide-react';
+import React from 'react';
+import { FileSpreadsheet, FileText, Loader2, PlayCircle } from 'lucide-react';
 import { parseFile } from '../utils/fileParser';
 import { AppState } from '../types';
 
 interface DropZoneProps {
-  onDataLoaded: (data: any[], useAi: boolean) => void;
+  onDataLoaded: (data: any[]) => void;
   setAppState: (state: AppState) => void;
   appState: AppState;
 }
@@ -25,7 +25,6 @@ const SAMPLE_DATA = [
 ];
 
 const DropZone: React.FC<DropZoneProps> = ({ onDataLoaded, setAppState, appState }) => {
-  const [useAi, setUseAi] = useState(true);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -37,7 +36,7 @@ const DropZone: React.FC<DropZoneProps> = ({ onDataLoaded, setAppState, appState
     setAppState(AppState.PROCESSING);
     try {
       const rawData = await parseFile(file);
-      onDataLoaded(rawData, useAi);
+      onDataLoaded(rawData);
     } catch (error) {
       console.error(error);
       setAppState(AppState.ERROR);
@@ -46,54 +45,19 @@ const DropZone: React.FC<DropZoneProps> = ({ onDataLoaded, setAppState, appState
   };
 
   const handleSampleClick = () => {
-    onDataLoaded(SAMPLE_DATA, useAi);
+    onDataLoaded(SAMPLE_DATA);
   };
 
   const isProcessing = appState === AppState.PROCESSING;
 
   return (
     <div className="w-full max-w-2xl mx-auto mt-6">
-      {/* Mode Toggle */}
-      <div className="flex justify-center mb-6">
-        <div className="bg-white p-1 rounded-xl border border-slate-200 inline-flex shadow-sm">
-          <button
-            onClick={() => setUseAi(true)}
-            className={`
-              flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all
-              ${useAi 
-                ? 'bg-indigo-600 text-white shadow-md' 
-                : 'text-slate-500 hover:bg-slate-50'}
-            `}
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            AIモード (推奨)
-          </button>
-          <button
-            onClick={() => setUseAi(false)}
-            className={`
-              flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all
-              ${!useAi 
-                ? 'bg-slate-800 text-white shadow-md' 
-                : 'text-slate-500 hover:bg-slate-50'}
-            `}
-          >
-            <Zap className="w-4 h-4 mr-2" />
-            シンプルモード
-          </button>
-        </div>
-      </div>
-
+      
       {/* Info Message */}
       <div className="text-center mb-6 text-sm text-slate-500">
-        {useAi ? (
-          <span>
-            AIが「漢字の読み仮名」を推測し、<br className="sm:hidden"/>正確な50音順並べ替えと表記統一を行います。
-          </span>
-        ) : (
-          <span>
-            ファイルをそのまま読み込みます。<br className="sm:hidden"/>読み仮名生成を行わないため、漢字の並び順は正確ではありません。
-          </span>
-        )}
+        CSVまたはExcelファイルを読み込みます。<br/>
+        漢字が含まれる名前は最初「その他」に分類されますが、<br/>
+        後からAIを使って五十音順に振り分けることができます。
       </div>
 
       <label 
@@ -112,10 +76,10 @@ const DropZone: React.FC<DropZoneProps> = ({ onDataLoaded, setAppState, appState
             <>
               <Loader2 className="w-12 h-12 mb-4 text-indigo-600 animate-spin" />
               <p className="mb-2 text-lg font-semibold text-indigo-700">
-                {useAi ? "AIが解析中..." : "読み込み中..."}
+                読み込み中...
               </p>
               <p className="text-sm text-indigo-500">
-                {useAi ? "読み仮名と人数を抽出しています" : "データを変換しています"}
+                データを解析しています
               </p>
             </>
           ) : (
@@ -128,7 +92,7 @@ const DropZone: React.FC<DropZoneProps> = ({ onDataLoaded, setAppState, appState
                 CSV または Excel をドロップ
               </p>
               <p className="text-sm text-slate-500">
-                {useAi ? "AI自動整列対応" : "高速読み込みモード"}
+                ファイルを読み込んで名簿を作成
               </p>
             </>
           )}
