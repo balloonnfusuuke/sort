@@ -225,7 +225,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
 
                 {/* Name Column */}
                 <div 
-                    className="flex-1 px-2 print:px-0.5 flex flex-col justify-center border-r border-slate-200 print:border-r print:border-black min-w-0"
+                    className="flex-1 px-2 print:pl-0.5 print:pr-0.5 flex flex-col justify-center border-r border-slate-200 print:border-r print:border-black min-w-0"
                     style={{ borderRight: isEditing ? 'none' : '1px solid black' }} // Force internal vertical line
                 >
                   {isEditing ? (
@@ -277,7 +277,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
 
                 {/* Count Column */}
                 <div 
-                    className="w-16 print:w-14 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-0.5"
+                    className="w-16 print:w-9 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-0.5"
                     style={{ borderRight: isEditing ? 'none' : '1px solid black' }} // Force internal vertical line
                 >
                   {isEditing ? (
@@ -372,7 +372,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
                         
                          {/* Name Column (Empty) */}
                         <div 
-                            className="flex-1 px-2 print:px-0.5 flex items-center justify-end border-r border-slate-200 print:border-r print:border-black min-w-0 relative"
+                            className="flex-1 px-2 print:pl-0.5 print:pr-0.5 flex items-center justify-end border-r border-slate-200 print:border-r print:border-black min-w-0 relative"
                             style={{ borderRight: '1px solid black' }}
                         >
                             {/* Insert invisible text with nameStyle to force height */}
@@ -383,7 +383,7 @@ const RosterTable: React.FC<RosterTableProps> = ({ participants, onUpdate, print
 
                          {/* Count Column (Empty) */}
                         <div 
-                            className="w-16 print:w-14 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-0.5"
+                            className="w-16 print:w-9 flex-shrink-0 flex items-center justify-center border-r border-slate-200 print:border-r print:border-black print:px-0.5"
                             style={{ borderRight: '1px solid black' }} 
                         >
                              <span className="text-slate-300 text-xs print:hidden">名</span>

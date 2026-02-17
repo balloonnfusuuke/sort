@@ -95,14 +95,14 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => 
           <input 
             type="range" 
             min="1" 
-            max="6" 
+            max="8" 
             step="1"
             value={settings.columns}
             onChange={(e) => handleChange('columns', parseInt(e.target.value))}
             className="w-full accent-indigo-600"
           />
           <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-            <span>1</span><span>6</span>
+            <span>1</span><span>8</span>
           </div>
         </div>
 
@@ -115,7 +115,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => 
           <div className="flex items-center gap-2">
             <input 
               type="range" 
-              min="8" 
+              min="6" 
               max="32" 
               step="1"
               value={settings.fontSize}
@@ -124,7 +124,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => 
             />
             <input 
               type="number"
-              min="8"
+              min="6"
               max="50"
               value={settings.fontSize}
               onChange={(e) => handleChange('fontSize', parseInt(e.target.value))}
@@ -141,7 +141,7 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => 
           </label>
           <input 
             type="range" 
-            min="10" 
+            min="8" 
             max="40" 
             step="1"
             value={settings.headerFontSize || 16}
@@ -187,12 +187,12 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ settings, onChange }) => 
         {/* 6. Memo Column Width */}
         <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
            <label className="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between">
-            <div className="flex items-center"><PenLine className="w-3 h-3 mr-1" /> 記入欄の幅 (メモ用)</div>
+            <div className="flex items-center"><PenLine className="w-3 h-3 mr-1" /> 記入欄の幅</div>
             <span className="text-indigo-600">{settings.checkboxSize}px</span>
           </label>
            <input 
             type="range" 
-            min="20" 
+            min="10" 
             max="200" 
             step="5"
             value={settings.checkboxSize}
