@@ -1,0 +1,5 @@
+{
+  "name": "Smart Roster Sort (名簿自動整理くん)",
+  "description": "Automatically parses Excel/CSV reservation lists, standardizes names and participant counts, and sorts them by Japanese syllabary (50-on jun) using Gemini AI.",
+  "requestFramePermissions": []
+}
