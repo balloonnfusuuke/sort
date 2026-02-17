@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { AppState, Participant, PrintSettings as PrintSettingsType } from './types';
 import DropZone from './components/DropZone';
 import RosterTable from './components/RosterTable';
@@ -17,24 +17,44 @@ const App: React.FC = () => {
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
   
-  // Default Print Settings with numeric values
-  const [printSettings, setPrintSettings] = useState<PrintSettingsType>({
-    orientation: 'landscape',
-    columns: 3,
-    fontSize: 12,       // 12px
-    rowPadding: 2,      // 2px
-    checkboxSize: 40,   // 40px for memo
-    headerFontSize: 16,  // 16px for headers
-    titleFontSize: 24,   // 24px for title
+  // Default Print Settings with localStorage persistence
+  const [printSettings, setPrintSettings] = useState<PrintSettingsType>(() => {
+    const defaultSettings: PrintSettingsType = {
+      orientation: 'landscape',
+      columns: 3,
+      fontSize: 12,       // 12px
+      rowPadding: 2,      // 2px
+      checkboxSize: 40,   // 40px for memo
+      headerFontSize: 16,  // 16px for headers
+      titleFontSize: 24,   // 24px for title
+      
+      // Header Defaults
+      title: '参加者名簿',
+      date: new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }),
+      subtitle: '受付用リスト (50音順)',
+      
+      // Walk-in Slots Default
+      walkInSlots: 10
+    };
+
+    try {
+      const saved = localStorage.getItem('smartRoster_settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Merge defaults with saved data to ensure all fields exist
+        return { ...defaultSettings, ...parsed };
+      }
+    } catch (e) {
+      console.warn("Failed to load settings from local storage", e);
+    }
     
-    // Header Defaults
-    title: '参加者名簿',
-    date: new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }),
-    subtitle: '受付用リスト (50音順)',
-    
-    // Walk-in Slots Default
-    walkInSlots: 10
+    return defaultSettings;
   });
+
+  // Save settings to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('smartRoster_settings', JSON.stringify(printSettings));
+  }, [printSettings]);
 
   const handleDataLoaded = useCallback(async (rawData: any[]) => {
     setAppState(AppState.PROCESSING);
